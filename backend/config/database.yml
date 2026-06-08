@@ -1,0 +1,22 @@
+default: &default
+  adapter: mysql2
+  encoding: utf8mb4
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: <%= ENV.fetch("MYSQL_USER") %>
+  password: <%= ENV.fetch("MYSQL_PASSWORD") %>
+  host: <%= ENV.fetch("DB_HOST") { "127.0.0.1" } %>
+  port: 3306
+
+development:
+  <<: *default
+  database: <%= ENV.fetch("MYSQL_DATABASE") { "fukushima_event_navi_development" } %>
+
+test:
+  <<: *default
+  database: fukushima_event_navi_test
+
+production:
+  <<: *default
+  database: fukushima_event_navi_production
+  username: <%= ENV.fetch("MYSQL_USER") %>
+  password: <%= ENV.fetch("MYSQL_PASSWORD") %>
