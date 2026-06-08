@@ -32,13 +32,12 @@ MySQL（データベース） :3306（Docker）
 
 ### イベント
 
+イベントは Connpass API から自動取得するのみ。手動登録・更新・削除はない。
+
 | メソッド | パス | 説明 | 認証 |
 |---------|------|------|------|
-| GET | `/api/v1/events` | イベント一覧取得（絞り込み対応） | 不要 |
+| GET | `/api/v1/events` | イベント一覧取得（絞り込み・ソート対応） | 不要 |
 | GET | `/api/v1/events/:id` | イベント詳細取得 | 不要 |
-| POST | `/api/v1/events` | イベント新規登録 | 必要 |
-| PATCH | `/api/v1/events/:id` | イベント更新 | 必要（自分のイベントのみ） |
-| DELETE | `/api/v1/events/:id` | イベント削除 | 必要（自分のイベントのみ） |
 
 #### GET /api/v1/events クエリパラメータ
 
@@ -48,6 +47,7 @@ MySQL（データベース） :3306（Docker）
 | category | string | カテゴリで絞り込み | `?category=it` |
 | start_date | date | この日以降のイベントを取得 | `?start_date=2026-06-01` |
 | end_date | date | この日以前のイベントを取得 | `?end_date=2026-06-30` |
+| sort | string | ソート順（`newest` / `start_asc`）デフォルト: `start_asc` | `?sort=newest` |
 | page | integer | ページ番号（ページネーション） | `?page=2` |
 
 #### レスポンス例（GET /api/v1/events）
@@ -65,8 +65,8 @@ MySQL（データベース） :3306（Docker）
       "start_at": "2026-06-15T14:00:00+09:00",
       "end_at": "2026-06-15T17:00:00+09:00",
       "event_url": "https://connpass.com/event/123456/",
-      "source": "connpass",
-      "user_id": null
+      "image_url": "https://connpass.com/event/123456/image.png",
+      "source": "connpass"
     }
   ],
   "meta": {
@@ -76,6 +76,16 @@ MySQL（データベース） :3306（Docker）
   }
 }
 ```
+
+### スケジュール（カレンダー予定管理）
+
+ログインユーザーが「カレンダーに追加」したイベントを管理する（F-04）。
+
+| メソッド | パス | 説明 | 認証 |
+|---------|------|------|------|
+| GET | `/api/v1/schedules` | 自分のスケジュール一覧取得 | 必要 |
+| POST | `/api/v1/schedules` | イベントをスケジュールに追加 | 必要 |
+| DELETE | `/api/v1/schedules/:event_id` | スケジュールから削除 | 必要 |
 
 ### お気に入り
 
@@ -90,6 +100,16 @@ MySQL（データベース） :3306（Docker）
 | メソッド | パス | 説明 | 認証 |
 |---------|------|------|------|
 | POST | `/api/v1/connpass/fetch` | Connpass から福島関連イベントを取得・保存 | 必要（MVP では admin のみ） |
+
+### 訪問記録（マップ制覇）
+
+Phase 4 機能（F-15）。
+
+| メソッド | パス | 説明 | 認証 |
+|---------|------|------|------|
+| GET | `/api/v1/visit_records` | 自分の訪問記録一覧取得 | 必要 |
+| POST | `/api/v1/visit_records` | 訪問記録を登録 | 必要 |
+| DELETE | `/api/v1/visit_records/:id` | 訪問記録を削除 | 必要 |
 
 ---
 
@@ -117,10 +137,7 @@ Rails が Connpass API を呼び出す
 
 ```json
 {
-  "errors": {
-    "title": ["を入力してください"],
-    "start_at": ["を入力してください"]
-  }
+  "errors": ["メールアドレスまたはパスワードが正しくありません"]
 }
 ```
 
@@ -130,7 +147,7 @@ Rails が Connpass API を呼び出す
 | 201 | 成功（作成） |
 | 204 | 成功（削除） |
 | 401 | 未認証（ログインが必要） |
-| 403 | 権限なし（他人のイベントは編集不可） |
+| 403 | 権限なし（他人の記録は操作不可） |
 | 404 | リソースが見つからない |
 | 422 | バリデーションエラー |
 
