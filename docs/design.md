@@ -1,4 +1,4 @@
-# 設計書
+# 設計書（API・システム構成）
 
 ## システム構成
 
@@ -7,7 +7,7 @@
   │
   ▼
 Next.js（フロントエンド） :3000
-  │  JSON（API通信）
+  │  JSON（HTTP API 通信）
   ▼
 Ruby on Rails（バックエンド API） :8080
   │  SQL
@@ -17,155 +17,125 @@ MySQL（データベース） :3306（Docker）
 
 ---
 
-## ER 図（テーブル設計）
-
-```
-users                          events
-───────────────────            ─────────────────────────
-id             PK              id             PK
-email          string          title          string
-password_digest string         description    text
-created_at     datetime        location       string
-updated_at     datetime        area           string      ← 地域（例: 郡山市）
-                               category       string      ← カテゴリ（例: IT勉強会）
-                               start_at       datetime    ← 開始日時
-                               end_at         datetime    ← 終了日時（任意）
-                               capacity       integer     ← 定員（任意）
-                               event_url      string      ← 外部URL（Connpass等）
-                               source         string      ← 'manual' or 'connpass'
-                               connpass_id    integer     ← Connpassのイベントid（重複防止）
-                               user_id        integer  FK → users.id
-                               created_at     datetime
-                               updated_at     datetime
-
-
-favorites
-───────────────────
-id             PK
-user_id        integer  FK → users.id
-event_id       integer  FK → events.id
-created_at     datetime
-updated_at     datetime
-
-※ user_id + event_id の組み合わせはユニーク制約をつける
-```
-
-### テーブル詳細
-
-#### users テーブル
-
-| カラム名 | 型 | 必須 | 説明 |
-|---------|-----|------|------|
-| id | bigint | ◎ | 主キー（自動採番） |
-| email | string | ◎ | メールアドレス（ユニーク） |
-| encrypted_password | string | ◎ | Devise がハッシュ化して保存 |
-| created_at | datetime | ◎ | 作成日時 |
-| updated_at | datetime | ◎ | 更新日時 |
-
-#### events テーブル
-
-| カラム名 | 型 | 必須 | 説明 |
-|---------|-----|------|------|
-| id | bigint | ◎ | 主キー |
-| title | string | ◎ | イベント名 |
-| description | text | - | 詳細説明 |
-| location | string | - | 開催場所（会場名・住所） |
-| area | string | ◎ | 地域（郡山市 / 本宮市 / いわき市 / その他） |
-| category | string | ◎ | カテゴリ（IT / 音楽 / スポーツ / 食 / その他） |
-| start_at | datetime | ◎ | 開始日時 |
-| end_at | datetime | - | 終了日時 |
-| capacity | integer | - | 定員 |
-| event_url | string | - | 外部リンク（Connpass URL など） |
-| source | string | ◎ | 登録元（manual / connpass） |
-| connpass_id | integer | - | Connpass イベント ID（重複取込み防止） |
-| user_id | bigint | - | 登録ユーザー（NULL = Connpass 自動取得） |
-| created_at | datetime | ◎ | 作成日時 |
-| updated_at | datetime | ◎ | 更新日時 |
-
-#### favorites テーブル
-
-| カラム名 | 型 | 必須 | 説明 |
-|---------|-----|------|------|
-| id | bigint | ◎ | 主キー |
-| user_id | bigint | ◎ | ユーザー ID（外部キー） |
-| event_id | bigint | ◎ | イベント ID（外部キー） |
-| created_at | datetime | ◎ | お気に入り登録日時 |
-
----
-
 ## API エンドポイント一覧
 
-### 認証（Devise Token Auth）
+すべてのエンドポイントは `/api/v1/` プレフィックスを付ける。
 
-| メソッド | パス | 説明 |
-|---------|------|------|
-| POST | `/api/v1/auth` | サインアップ |
-| POST | `/api/v1/auth/sign_in` | ログイン |
-| DELETE | `/api/v1/auth/sign_out` | ログアウト |
+### 認証（Devise）
+
+| メソッド | パス | 説明 | 認証 |
+|---------|------|------|------|
+| POST | `/api/v1/auth` | サインアップ（新規ユーザー登録） | 不要 |
+| POST | `/api/v1/auth/sign_in` | ログイン | 不要 |
+| DELETE | `/api/v1/auth/sign_out` | ログアウト | 必要 |
+| GET | `/api/v1/auth/validate_token` | トークン有効性確認 | 必要 |
 
 ### イベント
 
-| メソッド | パス | 説明 | 認証必要 |
-|---------|------|------|---------|
-| GET | `/api/v1/events` | イベント一覧取得 | 不要 |
+| メソッド | パス | 説明 | 認証 |
+|---------|------|------|------|
+| GET | `/api/v1/events` | イベント一覧取得（絞り込み対応） | 不要 |
 | GET | `/api/v1/events/:id` | イベント詳細取得 | 不要 |
-| POST | `/api/v1/events` | イベント登録 | 必要 |
+| POST | `/api/v1/events` | イベント新規登録 | 必要 |
 | PATCH | `/api/v1/events/:id` | イベント更新 | 必要（自分のイベントのみ） |
 | DELETE | `/api/v1/events/:id` | イベント削除 | 必要（自分のイベントのみ） |
 
-#### GET /api/v1/events のクエリパラメータ（絞り込み）
+#### GET /api/v1/events クエリパラメータ
 
 | パラメータ | 型 | 説明 | 例 |
 |-----------|-----|------|-----|
-| area | string | 地域で絞り込み | `?area=郡山市` |
-| category | string | カテゴリで絞り込み | `?category=IT` |
-| start_date | date | この日以降のイベント | `?start_date=2024-01-01` |
-| end_date | date | この日以前のイベント | `?end_date=2024-12-31` |
+| area | string | 地域で絞り込み | `?area=koriyama` |
+| category | string | カテゴリで絞り込み | `?category=it` |
+| start_date | date | この日以降のイベントを取得 | `?start_date=2026-06-01` |
+| end_date | date | この日以前のイベントを取得 | `?end_date=2026-06-30` |
+| page | integer | ページ番号（ページネーション） | `?page=2` |
+
+#### レスポンス例（GET /api/v1/events）
+
+```json
+{
+  "events": [
+    {
+      "id": 1,
+      "title": "福島Ruby勉強会",
+      "description": "Rubyについて話し合う勉強会です",
+      "location": "郡山市 ビッグパレットふくしま",
+      "area": "koriyama",
+      "category": "it",
+      "start_at": "2026-06-15T14:00:00+09:00",
+      "end_at": "2026-06-15T17:00:00+09:00",
+      "event_url": "https://connpass.com/event/123456/",
+      "source": "connpass",
+      "user_id": null
+    }
+  ],
+  "meta": {
+    "total_count": 42,
+    "current_page": 1,
+    "total_pages": 5
+  }
+}
+```
 
 ### お気に入り
 
-| メソッド | パス | 説明 | 認証必要 |
-|---------|------|------|---------|
+| メソッド | パス | 説明 | 認証 |
+|---------|------|------|------|
 | GET | `/api/v1/favorites` | お気に入り一覧取得 | 必要 |
-| POST | `/api/v1/favorites` | お気に入り追加 | 必要 |
-| DELETE | `/api/v1/favorites/:event_id` | お気に入り削除 | 必要 |
+| POST | `/api/v1/favorites` | お気に入りに追加 | 必要 |
+| DELETE | `/api/v1/favorites/:event_id` | お気に入りから削除 | 必要 |
 
 ### Connpass 連携
 
-| メソッド | パス | 説明 | 認証必要 |
-|---------|------|------|---------|
-| POST | `/api/v1/connpass/fetch` | Connpass から取得・保存 | 管理者のみ（MVP では省略） |
+| メソッド | パス | 説明 | 認証 |
+|---------|------|------|------|
+| POST | `/api/v1/connpass/fetch` | Connpass から福島関連イベントを取得・保存 | 必要（MVP では admin のみ） |
 
 ---
 
-## 画面一覧（フロントエンド）
-
-| パス | 画面名 | 説明 |
-|------|--------|------|
-| `/` | トップページ | イベント一覧（カード形式） |
-| `/calendar` | カレンダー画面 | FullCalendar でイベントを表示 |
-| `/events/new` | イベント登録画面 | フォームでイベントを登録 |
-| `/events/[id]` | イベント詳細画面 | イベントの詳細情報を表示 |
-| `/events/[id]/edit` | イベント編集画面 | イベント情報を編集 |
-| `/auth/signup` | サインアップ画面 | 新規ユーザー登録 |
-| `/auth/login` | ログイン画面 | メール・パスワードでログイン |
-| `/favorites` | お気に入り一覧 | お気に入りのイベント一覧 |
-
----
-
-## データの流れ（Connpass 連携）
+## Connpass API 連携フロー
 
 ```
-管理者が /api/v1/connpass/fetch を POST
+管理者が POST /api/v1/connpass/fetch を実行
   │
   ▼
 Rails が Connpass API を呼び出す
   GET https://connpass.com/api/v1/event/?keyword=福島&count=100
   │
   ▼
-レスポンスの events を events テーブルに保存
-（connpass_id が重複する場合はスキップ）
+レスポンスの events 配列を処理
+  ├── connpass_id が DB に存在する → スキップ（重複防止）
+  └── 存在しない → events テーブルに保存（source: 'connpass'）
   │
   ▼
-フロントエンドの一覧に自動で表示される
+保存完了。次回のイベント一覧取得時に自動表示される
 ```
+
+---
+
+## エラーレスポンス形式
+
+```json
+{
+  "errors": {
+    "title": ["を入力してください"],
+    "start_at": ["を入力してください"]
+  }
+}
+```
+
+| HTTP ステータス | 用途 |
+|--------------|------|
+| 200 | 成功（取得・更新） |
+| 201 | 成功（作成） |
+| 204 | 成功（削除） |
+| 401 | 未認証（ログインが必要） |
+| 403 | 権限なし（他人のイベントは編集不可） |
+| 404 | リソースが見つからない |
+| 422 | バリデーションエラー |
+
+---
+
+## データ設計
+
+テーブル定義・ER 図は [docs/database-design.md](./database-design.md) を参照。
