@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>福島イベントナビ</title>
+  <style>
+    /* ===== リセット ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --c-primary:     #5f8b8b;
+      --c-primary-dk:  #4a7070;
+      --c-primary-lt:  #e8f2f2;
+      --c-bg:          #f2f5f4;
+      --c-surface:     #ffffff;
+      --c-text:        #2c3333;
+      --c-sub:         #7a8a8a;
+      --c-border:      #dde6e4;
+      --c-heart:       #fe587a;
+      --radius-card:   14px;
+      --shadow-card:   0 2px 16px rgba(0,0,0,0.07);
+      --shadow-hover:  0 10px 32px rgba(0,0,0,0.13);
+      --transition:    0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text);
+      min-height: 100vh;
+    }
+
+    /* ===== ナビ ===== */
+    .nav {
+      background: var(--c-primary);
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    }
+    .nav__logo {
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav__logo-icon {
+      width: 28px;
+      height: 28px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .nav__links { display: flex; gap: 4px; }
+    .nav__link {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 20px;
+      transition: background var(--transition), color var(--transition);
+    }
+    .nav__link:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .nav__link--active { background: rgba(255,255,255,0.2); color: #fff; }
+    .nav__link--btn {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.3);
+      font-weight: 600;
+    }
+    .nav__link--btn:hover { background: rgba(255,255,255,0.28); }
+
+    /* ===== 検索バー ===== */
+    .search {
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border);
+      padding: 14px 28px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .search select,
+    .search input[type="date"] {
+      padding: 9px 14px;
+      border: 1.5px solid var(--c-border);
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--c-text);
+      background: var(--c-bg);
+      outline: none;
+      cursor: pointer;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .search select:focus,
+    .search input[type="date"]:focus {
+      border-color: var(--c-primary);
+      box-shadow: 0 0 0 3px rgba(95,139,139,0.12);
+    }
+    .search__range {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--c-sub);
+    }
+    .btn-search {
+      background: var(--c-primary);
+      color: #fff;
+      border: none;
+      padding: 9px 22px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--transition), transform 0.1s;
+    }
+    .btn-search:hover { background: var(--c-primary-dk); }
+    .btn-search:active { transform: scale(0.97); }
+    .btn-register {
+      margin-left: auto;
+      background: var(--c-surface);
+      color: var(--c-primary);
+      border: 1.5px solid var(--c-primary);
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background var(--transition), color var(--transition);
+    }
+    .btn-register:hover { background: var(--c-primary); color: #fff; }
+
+    /* ===== メイン ===== */
+    .main {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+    .result-label {
+      font-size: 13px;
+      color: var(--c-sub);
+      margin-bottom: 22px;
+      font-weight: 500;
+    }
+
+    /* ===== グリッド ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+      gap: 22px;
+    }
+
+    /* ===== カード（フェードイン） ===== */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card {
+      background: var(--c-surface);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      animation: fadeUp 0.45s ease both;
+    }
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.10s; }
+    .card:nth-child(3) { animation-delay: 0.15s; }
+    .card:nth-child(4) { animation-delay: 0.20s; }
+    .card:nth-child(5) { animation-delay: 0.25s; }
+    .card:nth-child(6) { animation-delay: 0.30s; }
+    .card:nth-child(7) { animation-delay: 0.35s; }
+    .card:nth-child(8) { animation-delay: 0.40s; }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .card__img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      display: block;
+    }
+    .card__placeholder {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: linear-gradient(135deg, #cde0de 0%, #b4cece 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 52px;
+    }
+    .card__body { padding: 14px 16px 10px; flex: 1; }
+    .card__tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 9px;
+    }
+    .tag--it      { background: #e5f3f1; color: #2a7a68; }
+    .tag--music   { background: #f3ede5; color: #7a5a2a; }
+    .tag--sports  { background: #eaf3e5; color: #3a7a2a; }
+    .tag--food    { background: #f3e8e5; color: #7a3a2a; }
+    .tag--art     { background: #ede5f3; color: #5a2a7a; }
+    .tag--outdoor { background: #e8f3e8; color: #2a6a2a; }
+
+    .card__title {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+    .card__meta { display: flex; flex-direction: column; gap: 4px; }
+    .card__meta-row {
+      font-size: 12px;
+      color: var(--c-sub);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ===== お気に入りボタン（ハートアニメーション） ===== */
+    .card__foot {
+      padding: 8px 14px 14px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* yui540/css-animations の tips-3 ベース */
+    .fav-btn {
+      --size: 22px;
+      position: relative;
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background var(--transition);
+    }
+    .fav-btn:hover { background: #fef0f3; }
+
+    .heart {
+      --size: 22px;
+      position: relative;
+      width: var(--size);
+      height: var(--size);
+      pointer-events: none;
+    }
+    .heart__stroke,
+    .heart__fill {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+    .heart__fill {
+      top: 5.3%;
+      opacity: 0;
+      transform: scale(0);
+      transform-origin: center;
+      transition: none;
+    }
+
+    /* クロスライン */
+    .cross {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .cross__bar {
+      position: absolute;
+      top: 0; left: 50%;
+      height: 50%;
+      transform-origin: bottom center;
+    }
+    .cross__bar:nth-child(1) { transform: translateX(-50%); }
+    .cross__bar:nth-child(2) { transform: translateX(-50%) rotate(90deg); }
+    .cross__bar:nth-child(3) { transform: translateX(-50%) rotate(180deg); }
+    .cross__bar:nth-child(4) { transform: translateX(-50%) rotate(270deg); }
+
+    .cross--line { width: 160%; height: 160%; }
+    .cross--line .cross__bar { width: 1px; border-radius: 999px; overflow: hidden; }
+    .cross--line .cross__bar::after {
+      content: "";
+      display: block;
+      width: 100%; height: 100%;
+      border-radius: 999px;
+      background-color: currentColor;
+      opacity: 0;
+    }
+
+    .cross--seg { width: 220%; height: 220%; }
+    .cross--seg .cross__bar { width: 2.5px; }
+    .cross__seg {
+      display: block;
+      width: 100%; height: 40%;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .cross__seg::after {
+      content: "";
+      display: block;
+      width: 100%; height: 100%;
+      border-radius: 999px;
+      background-color: currentColor;
+      opacity: 0;
+    }
+
+    /* アニメーション（liked クラスで発火） */
+    @keyframes heart-popup {
+      0%   { transform: scale(0); opacity: 0; }
+      40%  { transform: scale(1.6); opacity: 1; }
+      60%  { transform: scale(1.04); }
+      80%  { transform: scale(1.1); }
+      100% { transform: scale(1.04); opacity: 1; }
+    }
+    @keyframes cross-line-slide {
+      from { transform: translateY(-101%); }
+      to   { transform: translateY(101%); }
+    }
+    @keyframes cross-seg-slide {
+      from { transform: translateY(101%); }
+      to   { transform: translateY(-101%); }
+    }
+
+    .fav-btn.liked .heart__fill {
+      opacity: 1;
+      animation: heart-popup 0.7s ease-in-out 0.2s both;
+    }
+    .fav-btn.liked .cross--0 .cross__bar::after {
+      animation: cross-line-slide 0.45s cubic-bezier(0.75, 0.02, 0.15, 1) 0s both;
+    }
+    .fav-btn.liked .cross--1 .cross__seg::after {
+      animation: cross-seg-slide 1s cubic-bezier(0.75, 0.02, 0.15, 1) 0.3s both;
+    }
+    .fav-btn.liked .cross--2 .cross__seg::after {
+      animation: cross-seg-slide 1s cubic-bezier(0.75, 0.02, 0.15, 1) 0.4s both;
+    }
+
+    .cross--0 { color: var(--c-heart); transform: translate(-50%, -50%) rotate(45deg); }
+    .cross--1 { color: #f9dc65; width: 150%; height: 150%; transform: translate(-50%, -50%); }
+    .cross--2 { color: #f9dc65; transform: translate(-50%, -50%) rotate(45deg); }
+
+    /* ===== モーダル ===== */
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.94) translateY(12px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes overlayIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.48);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .overlay.open {
+      display: flex;
+      animation: overlayIn 0.2s ease both;
+    }
+    .modal {
+      background: var(--c-surface);
+      border-radius: 18px;
+      max-width: 660px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+      animation: modalIn 0.28s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+    }
+    .modal__img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: 18px 18px 0 0;
+      display: block;
+    }
+    .modal__img-ph {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, #cde0de 0%, #b4cece 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      border-radius: 18px 18px 0 0;
+    }
+    .modal__body { padding: 26px 28px 28px; }
+    .modal__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .modal__close {
+      flex-shrink: 0;
+      width: 32px; height: 32px;
+      border: none;
+      background: var(--c-bg);
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      color: var(--c-sub);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--transition);
+    }
+    .modal__close:hover { background: var(--c-border); }
+    .modal__title { font-size: 19px; font-weight: 700; line-height: 1.4; }
+    .modal__meta {
+      display: flex; flex-direction: column; gap: 8px;
+      margin: 16px 0;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--c-border);
+    }
+    .modal__meta-row {
+      font-size: 14px;
+      color: var(--c-sub);
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .modal__desc {
+      font-size: 14px;
+      line-height: 1.85;
+      color: var(--c-text);
+      margin-bottom: 22px;
+    }
+    .modal__actions { display: flex; gap: 12px; }
+    .btn-primary {
+      background: var(--c-primary);
+      color: #fff;
+      border: none;
+      padding: 11px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--transition), transform 0.1s;
+    }
+    .btn-primary:hover { background: var(--c-primary-dk); }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-outline {
+      background: none;
+      color: var(--c-primary);
+      border: 1.5px solid var(--c-primary);
+      padding: 11px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+    }
+    .btn-outline:hover { background: var(--c-primary-lt); }
+
+    /* ===== フッター ===== */
+    .footer {
+      background: var(--c-primary-dk);
+      color: rgba(255,255,255,0.65);
+      text-align: center;
+      padding: 22px;
+      font-size: 12px;
+    }
+
+    /* ===== レスポンシブ ===== */
+    @media (max-width: 640px) {
+      .nav { padding: 0 16px; }
+      .search { padding: 12px 16px; }
+      .main { padding: 20px 14px 60px; }
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .btn-register { display: none; }
+      .nav__link { font-size: 12px; padding: 6px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ナビ -->
+<nav class="nav">
+  <a href="#" class="nav__logo">
+    <span class="nav__logo-icon">🌿</span>
+    福島イベントナビ
+  </a>
+  <div class="nav__links">
+    <a href="#" class="nav__link nav__link--active">一覧</a>
+    <a href="#" class="nav__link">カレンダー</a>
+    <a href="#" class="nav__link">マップ</a>
+    <a href="#" class="nav__link nav__link--btn">ログイン</a>
+  </div>
+</nav>
+
+<!-- 検索 -->
+<div class="search">
+  <select>
+    <option>📍 すべての地域</option>
+    <option>郡山市</option><option>本宮市</option>
+    <option>いわき市</option><option>福島市</option>
+    <option>会津若松市</option><option>その他</option>
+  </select>
+  <select>
+    <option>🏷 すべてのカテゴリ</option>
+    <option>IT・テクノロジー</option><option>音楽</option>
+    <option>スポーツ</option><option>グルメ・食</option>
+    <option>アート・文化</option><option>アウトドア</option>
+  </select>
+  <div class="search__range">
+    <input type="date" value="2026-06-01">
+    <span>〜</span>
+    <input type="date" value="2026-06-30">
+  </div>
+  <button class="btn-search">検索</button>
+  <button class="btn-register">＋ イベントを登録</button>
+</div>
+
+<!-- メイン -->
+<main class="main">
+  <p class="result-label">8件のイベントが見つかりました</p>
+  <div class="grid">
+
+    <!-- カード 1 -->
+    <a class="card" href="#" onclick="openModal('m1');return false;">
+      <img class="card__img" src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80" alt="">
+      <div class="card__body">
+        <span class="card__tag tag--it">💻 IT・テクノロジー</span>
+        <div class="card__title">福島 Ruby 勉強会 vol.12</div>
+        <div class="card__meta">
+          <div class="card__meta-row">📅 2026年6月15日（月）14:00〜17:00</div>
+          <div class="card__meta-row">📍 郡山市 ビッグパレットふくしま</div>
+        </div>
+      </div>
+      <div class="card__foot">
+        <button class="fav-btn" onclick="toggleFav(this);event.stopPropagation();" aria-label="お気に入り">
+          <div class="heart">
+            <img class="heart__stroke" src="./heart-s.svg" alt="">
+            <img class="heart__fill"  src="./heart-f.svg" alt="">
+            <div class="cross cross--line cross--0">
+              <div class="cross__bar"></div><div class="cross__bar"></div>
+              <div class="cross__bar"></div><div class="cross__bar"></div>
+            </div>
+            <div class="cross cross--seg cross--1">
+              <div class="cross__bar"><span class="cross__seg"></span></div>
+              <div class="cross__bar"><span class="cross__seg"></span></div>
+              <div class="cross__bar"><span class="cross__seg"></span></div>
+              <div class="cross__bar"><span class="cross__seg"></span></div>
+            </div>
+            <div class="cross cross--seg cross--2">
+              <div class="cross__bar"><span class="cross__seg"></span></div>
+              <div class="cross__bar"><span class="cross__seg"></span></div>
+              <div class="cross__bar"><span class="cross__seg"></span></div>
+              <div class="cross__bar"><span class="cross__seg"></span></div>
+            </div>
+          </div>
+        </button>
+      </div>
+    </a>
+
+    <!-- カード 2 -->
+    <a class="card" href="#" onclick="openModal('m2');return false;">
+      <img class="card__img" src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80" alt="">
+      <div class="card__body">
+        <span class="card__tag tag--music">🎵 音楽</span>
+        <div class="card__title">郡山ジャズフェスティバル 2026</div>
+        <div class="card__meta">
+          <div class="card__meta-row">📅 2026年6月20日（土）11:00〜20:00</div>
+          <div class="card__meta-row">📍 郡山市 開成山公園</div>
+        </div>
+      </div>
+      <div class="card__foot"><button class="fav-btn" onclick="toggleFav(this);event.stopPropagation();" aria-label="お気に入り"><div class="heart"><img class="heart__stroke" src="./heart-s.svg" alt=""><img class="heart__fill" src="./heart-f.svg" alt=""><div class="cross cross--line cross--0"><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div></div><div class="cross cross--seg cross--1"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div><div class="cross cross--seg cross--2"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div></div></button></div>
+    </a>
+
+    <!-- カード 3 -->
+    <a class="card" href="#" onclick="openModal('m1');return false;">
+      <img class="card__img" src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80" alt="">
+      <div class="card__body">
+        <span class="card__tag tag--food">🍽 グルメ・食</span>
+        <div class="card__title">本宮グルメフェスタ 2026</div>
+        <div class="card__meta">
+          <div class="card__meta-row">📅 2026年6月22日（日）10:00〜16:00</div>
+          <div class="card__meta-row">📍 本宮市 本宮駅前広場</div>
+        </div>
+      </div>
+      <div class="card__foot"><button class="fav-btn" onclick="toggleFav(this);event.stopPropagation();" aria-label="お気に入り"><div class="heart"><img class="heart__stroke" src="./heart-s.svg" alt=""><img class="heart__fill" src="./heart-f.svg" alt=""><div class="cross cross--line cross--0"><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div></div><div class="cross cross--seg cross--1"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div><div class="cross cross--seg cross--2"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div></div></button></div>
+    </a>
+
+    <!-- カード 4 -->
+    <a class="card" href="#" onclick="openModal('m1');return false;">
+      <img class="card__img" src="https://images.unsplash.com/photo-1472745942893-4b9f730c7668?w=600&q=80" alt="">
+      <div class="card__body">
+        <span class="card__tag tag--outdoor">🏕 アウトドア</span>
+        <div class="card__title">磐梯山ファミリートレッキング</div>
+        <div class="card__meta">
+          <div class="card__meta-row">📅 2026年6月28日（日）8:00〜15:00</div>
+          <div class="card__meta-row">📍 会津若松市 磐梯山登山口</div>
+        </div>
+      </div>
+      <div class="card__foot"><button class="fav-btn" onclick="toggleFav(this);event.stopPropagation();" aria-label="お気に入り"><div class="heart"><img class="heart__stroke" src="./heart-s.svg" alt=""><img class="heart__fill" src="./heart-f.svg" alt=""><div class="cross cross--line cross--0"><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div></div><div class="cross cross--seg cross--1"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div><div class="cross cross--seg cross--2"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div></div></button></div>
+    </a>
+
+    <!-- カード 5 -->
+    <a class="card" href="#" onclick="openModal('m1');return false;">
+      <img class="card__img" src="https://images.unsplash.com/photo-1531243269054-5ebf6f34081e?w=600&q=80" alt="">
+      <div class="card__body">
+        <span class="card__tag tag--art">🎨 アート・文化</span>
+        <div class="card__title">いわきアートフェスタ 春の展示</div>
+        <div class="card__meta">
+          <div class="card__meta-row">📅 2026年6月10日〜6月30日</div>
+          <div class="card__meta-row">📍 いわき市 アリオス</div>
+        </div>
+      </div>
+      <div class="card__foot"><button class="fav-btn" onclick="toggleFav(this);event.stopPropagation();" aria-label="お気に入り"><div class="heart"><img class="heart__stroke" src="./heart-s.svg" alt=""><img class="heart__fill" src="./heart-f.svg" alt=""><div class="cross cross--line cross--0"><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div></div><div class="cross cross--seg cross--1"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div><div class="cross cross--seg cross--2"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div></div></button></div>
+    </a>
+
+    <!-- カード 6 -->
+    <a class="card" href="#" onclick="openModal('m1');return false;">
+      <img class="card__img" src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80" alt="">
+      <div class="card__body">
+        <span class="card__tag tag--sports">⚽ スポーツ</span>
+        <div class="card__title">こおりやまシティマラソン 2026</div>
+        <div class="card__meta">
+          <div class="card__meta-row">📅 2026年6月7日（日）8:30〜13:00</div>
+          <div class="card__meta-row">📍 郡山市 開成山陸上競技場</div>
+        </div>
+      </div>
+      <div class="card__foot"><button class="fav-btn" onclick="toggleFav(this);event.stopPropagation();" aria-label="お気に入り"><div class="heart"><img class="heart__stroke" src="./heart-s.svg" alt=""><img class="heart__fill" src="./heart-f.svg" alt=""><div class="cross cross--line cross--0"><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div></div><div class="cross cross--seg cross--1"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div><div class="cross cross--seg cross--2"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div></div></button></div>
+    </a>
+
+    <!-- カード 7（画像なし） -->
+    <a class="card" href="#" onclick="openModal('m1');return false;">
+      <div class="card__placeholder">💻</div>
+      <div class="card__body">
+        <span class="card__tag tag--it">💻 IT・テクノロジー</span>
+        <div class="card__title">もくもく会 in 福島市 #8</div>
+        <div class="card__meta">
+          <div class="card__meta-row">📅 2026年6月14日（日）13:00〜18:00</div>
+          <div class="card__meta-row">📍 福島市 Co+Ba コワーキング</div>
+        </div>
+      </div>
+      <div class="card__foot"><button class="fav-btn" onclick="toggleFav(this);event.stopPropagation();" aria-label="お気に入り"><div class="heart"><img class="heart__stroke" src="./heart-s.svg" alt=""><img class="heart__fill" src="./heart-f.svg" alt=""><div class="cross cross--line cross--0"><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div></div><div class="cross cross--seg cross--1"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div><div class="cross cross--seg cross--2"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div></div></button></div>
+    </a>
+
+    <!-- カード 8 -->
+    <a class="card" href="#" onclick="openModal('m1');return false;">
+      <img class="card__img" src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80" alt="">
+      <div class="card__body">
+        <span class="card__tag tag--food">🍽 グルメ・食</span>
+        <div class="card__title">ふくしま農産物直売フェア</div>
+        <div class="card__meta">
+          <div class="card__meta-row">📅 2026年6月21日（日）9:00〜14:00</div>
+          <div class="card__meta-row">📍 郡山市 農業センター</div>
+        </div>
+      </div>
+      <div class="card__foot"><button class="fav-btn" onclick="toggleFav(this);event.stopPropagation();" aria-label="お気に入り"><div class="heart"><img class="heart__stroke" src="./heart-s.svg" alt=""><img class="heart__fill" src="./heart-f.svg" alt=""><div class="cross cross--line cross--0"><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div><div class="cross__bar"></div></div><div class="cross cross--seg cross--1"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div><div class="cross cross--seg cross--2"><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div><div class="cross__bar"><span class="cross__seg"></span></div></div></div></button></div>
+    </a>
+
+  </div>
+</main>
+
+<footer class="footer">© 2026 福島イベントナビ — 福島県のイベントをひとつに</footer>
+
+<!-- モーダル 1 -->
+<div class="overlay" id="m1" onclick="closeModal('m1')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <img class="modal__img" src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80" alt="">
+    <div class="modal__body">
+      <div class="modal__head">
+        <span class="card__tag tag--it" style="margin:0">💻 IT・テクノロジー</span>
+        <button class="modal__close" onclick="closeModal('m1')">✕</button>
+      </div>
+      <div class="modal__title">福島 Ruby 勉強会 vol.12</div>
+      <div class="modal__meta">
+        <div class="modal__meta-row">📅 2026年6月15日（月）14:00〜17:00</div>
+        <div class="modal__meta-row">📍 郡山市 ビッグパレットふくしま 会議室B</div>
+        <div class="modal__meta-row">👥 定員 30名</div>
+        <div class="modal__meta-row">🌐 <a href="#" style="color:var(--c-primary)">connpass.com でイベント詳細を見る →</a></div>
+      </div>
+      <p class="modal__desc">
+        福島県内の Ruby エンジニア・学習者が集まる勉強会です。初心者から経験者まで気軽に参加できます。
+        今回のテーマは「Ruby on Rails で API を作ろう」。LT（5分）も募集中です！
+      </p>
+      <div class="modal__actions">
+        <button class="btn-primary">📅 参加予定に追加</button>
+        <button class="btn-outline">♡ お気に入り</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル 2 -->
+<div class="overlay" id="m2" onclick="closeModal('m2')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <img class="modal__img" src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80" alt="">
+    <div class="modal__body">
+      <div class="modal__head">
+        <span class="card__tag tag--music" style="margin:0">🎵 音楽</span>
+        <button class="modal__close" onclick="closeModal('m2')">✕</button>
+      </div>
+      <div class="modal__title">郡山ジャズフェスティバル 2026</div>
+      <div class="modal__meta">
+        <div class="modal__meta-row">📅 2026年6月20日（土）11:00〜20:00</div>
+        <div class="modal__meta-row">📍 郡山市 開成山公園 野外ステージ</div>
+        <div class="modal__meta-row">👥 入場無料</div>
+      </div>
+      <p class="modal__desc">
+        郡山市の開成山公園で開催される年に一度のジャズフェスティバル。
+        国内外のジャズミュージシャンが集結し、芝生の上でゆったりと音楽を楽しめます。
+        家族連れ・カップル・一人参加も大歓迎。飲食ブースも充実しています。
+      </p>
+      <div class="modal__actions">
+        <button class="btn-primary">📅 参加予定に追加</button>
+        <button class="btn-outline">♡ お気に入り</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // モーダル開閉
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.overlay.open').forEach(el => {
+        el.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    }
+  });
+
+  // ハートお気に入りアニメーション（tips-3 ベース）
+  function toggleFav(btn) {
+    if (btn.classList.contains('liked')) {
+      // 解除：アニメーションなしでリセット
+      btn.classList.remove('liked');
+      btn.querySelector('.heart__fill').style.cssText = 'opacity:0;transform:scale(0);animation:none;';
+    } else {
+      // 追加：アニメーション発火
+      const fill = btn.querySelector('.heart__fill');
+      fill.style.cssText = ''; // スタイルリセット
+      // アニメーション再発火のために一度外してから付け直す
+      void btn.offsetWidth;
+      btn.classList.add('liked');
+    }
+  }
+</script>
+</body>
+</html>
