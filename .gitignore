@@ -41,3 +41,21 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# ==========================================
+# Claude Code
+# ==========================================
+.claude/settings.local.json
+.github/create_issue.json
+.github/create_pr.json
+.github/create_pr2.json
+
+# ==========================================
+# Terraform（AWSデプロイ用）
+# ==========================================
+terraform/terraform.tfvars
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/app-key
+terraform/app-key.pub
