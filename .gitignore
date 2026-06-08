@@ -46,6 +46,9 @@ Thumbs.db
 # Claude Code
 # ==========================================
 .claude/settings.local.json
+task_plan.md
+progress.md
+findings.md
 .github/create_issue.json
 .github/create_pr.json
 .github/create_pr2.json
