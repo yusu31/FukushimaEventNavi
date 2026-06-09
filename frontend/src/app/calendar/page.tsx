@@ -8,6 +8,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import jaLocale from '@fullcalendar/core/locales/ja'
 import { EventClickArg, EventHoveringArg, DatesSetArg } from '@fullcalendar/core'
+import Image from 'next/image'
 import { ChevronLeft, ChevronRight, CalendarDays, MapPin, Clock, Users, ArrowRight, CalendarPlus, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
 import apiClient from '@/lib/axios'
@@ -29,6 +30,22 @@ const CATEGORY_COLORS: Record<string, string> = {
   'その他':         '#6b7280',
 }
 const DEFAULT_COLOR = '#5f8b8b'
+
+// EventCard と同じグラデーション（画像なし時のポップアップ背景）
+const CATEGORY_GRADIENTS: Record<string, string> = {
+  'テクノロジー':    'from-[#0ea5e9] to-[#6366f1]',
+  '音楽':           'from-[#f59e0b] to-[#ef4444]',
+  'スポーツ':       'from-[#22c55e] to-[#0ea5e9]',
+  '自然・アウトドア': 'from-[#16a34a] to-[#15803d]',
+  '食・グルメ':     'from-[#f97316] to-[#dc2626]',
+  '文化・伝統':     'from-[#8b5cf6] to-[#6d28d9]',
+  'ファミリー':     'from-[#06b6d4] to-[#0ea5e9]',
+  '教育':           'from-[#3b82f6] to-[#1d4ed8]',
+  '祭り・イベント': 'from-[#f59e0b] to-[#d97706]',
+  'アート':         'from-[#ec4899] to-[#a855f7]',
+  'その他':         'from-[#6b7280] to-[#4b5563]',
+}
+const DEFAULT_GRADIENT = 'from-[#5f8b8b] to-[#4a7070]'
 
 const ALL_CATEGORIES = ['すべて', ...Object.keys(CATEGORY_COLORS)]
 
@@ -71,6 +88,7 @@ type PopupState = {
   start_at: string
   end_at?: string
   capacity?: number
+  image_url?: string
   hint: string
   x: number
   y: number
@@ -91,6 +109,7 @@ type CalendarEvent = {
     start_at: string
     end_at?: string
     capacity?: number
+    image_url?: string
   }
 }
 
@@ -172,6 +191,7 @@ export default function CalendarPage() {
             start_at: ev.start_at,
             end_at: ev.end_at ?? undefined,
             capacity: ev.capacity ?? undefined,
+            image_url: ev.image_url ?? undefined,
           },
         }
       })
@@ -213,6 +233,7 @@ export default function CalendarPage() {
       start_at: arg.event.extendedProps.start_at,
       end_at: arg.event.extendedProps.end_at,
       capacity: arg.event.extendedProps.capacity,
+      image_url: arg.event.extendedProps.image_url,
       hint: randomHint(),
       x,
       y,
@@ -379,6 +400,7 @@ export default function CalendarPage() {
                 setCurrentView(arg.view.type as ViewKey)
               }}
               contentHeight={currentView === 'dayGridMonth' ? 'auto' : 600}
+              displayEventTime={false}
               dayMaxEvents={3}
               moreLinkText={(n) => `+${n}件`}
               nowIndicator={true}
@@ -400,64 +422,86 @@ export default function CalendarPage() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94 }}
             transition={{ duration: 0.14, ease: [0.4, 0, 0.2, 1] }}
-            style={{ position: 'fixed', left: popup.x, top: popup.y, zIndex: 9999, width: 268 }}
+            style={{ position: 'fixed', left: popup.x, top: popup.y, zIndex: 9999, width: 300 }}
             onMouseEnter={() => { if (popupTimerRef.current) clearTimeout(popupTimerRef.current) }}
             onMouseLeave={() => setPopup(null)}
-            className="bg-white/96 backdrop-blur-xl border border-white/70 rounded-xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.18),0_0_0_1px_rgba(0,0,0,0.04)]"
+            className="bg-white rounded-2xl overflow-hidden shadow-[0_16px_48px_rgba(0,0,0,0.22),0_0_0_1px_rgba(0,0,0,0.06)]"
           >
-            {/* カテゴリカラーバー */}
-            <div className="h-[3px]" style={{ backgroundColor: CATEGORY_COLORS[popup.category] ?? DEFAULT_COLOR }} />
-
-            <div className="px-4 py-3.5">
-              {/* カテゴリバッジ */}
+            {/* ─ 上5分の3: 画像エリア ─ */}
+            <div className="relative w-full h-[172px] overflow-hidden">
+              {popup.image_url ? (
+                <Image
+                  src={popup.image_url}
+                  alt={popup.title}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className={`absolute inset-0 bg-gradient-to-br ${CATEGORY_GRADIENTS[popup.category] ?? DEFAULT_GRADIENT} flex items-center justify-center`}>
+                  <span className="text-white/20 text-[64px] font-black select-none">
+                    {popup.category[0]}
+                  </span>
+                </div>
+              )}
+              {/* 下から暗くなるグラデーション */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              {/* カテゴリバッジ（画像の左下に重ねる） */}
               <span
-                className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full text-white mb-2"
-                style={{ backgroundColor: CATEGORY_COLORS[popup.category] ?? DEFAULT_COLOR }}
+                className="absolute bottom-3 left-3 text-[10px] font-bold px-2 py-1 rounded-full text-white backdrop-blur-sm"
+                style={{ backgroundColor: (CATEGORY_COLORS[popup.category] ?? DEFAULT_COLOR) + 'cc' }}
               >
                 {popup.category}
               </span>
+              {/* 参加予定バッジ */}
+              {scheduledEventIds.has(Number(popup.id)) && (
+                <span className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  <Check size={9} />予定済み
+                </span>
+              )}
+            </div>
 
+            {/* ─ 下5分の2: 情報エリア ─ */}
+            <div className="px-4 pt-3 pb-3.5">
               {/* タイトル */}
-              <h3 className="text-[13px] font-bold text-app-text leading-snug mb-3 line-clamp-2">
+              <h3 className="text-[13px] font-bold text-app-text leading-snug mb-2.5 line-clamp-2">
                 {popup.title}
               </h3>
 
               {/* 詳細情報 */}
               <div className="flex flex-col gap-1.5 mb-3">
-                <div className="flex items-start gap-2 text-[11px] text-app-sub">
-                  <Clock size={11} className="shrink-0 mt-0.5" />
+                <div className="flex items-center gap-2 text-[11px] text-app-sub">
+                  <Clock size={11} className="shrink-0 text-primary/60" />
                   <span>{formatDate(popup.start_at)}</span>
                 </div>
                 {popup.location && (
-                  <div className="flex items-start gap-2 text-[11px] text-app-sub">
-                    <MapPin size={11} className="shrink-0 mt-0.5" />
+                  <div className="flex items-center gap-2 text-[11px] text-app-sub">
+                    <MapPin size={11} className="shrink-0 text-primary/60" />
                     <span className="line-clamp-1">{popup.location}</span>
                   </div>
                 )}
                 {popup.capacity && (
                   <div className="flex items-center gap-2 text-[11px] text-app-sub">
-                    <Users size={11} className="shrink-0" />
+                    <Users size={11} className="shrink-0 text-primary/60" />
                     <span>定員 {popup.capacity}名</span>
                   </div>
                 )}
               </div>
 
               {/* ユーモアヒント */}
-              <p className="text-[10px] text-app-sub/60 italic leading-relaxed mb-3 border-t border-app-border/50 pt-2.5">
+              <p className="text-[10px] text-app-sub/50 italic leading-relaxed mb-3">
                 {popup.hint}
               </p>
 
               {/* ボタン群 */}
               <div className="flex gap-2">
-                {/* 参加予定に追加ボタン */}
                 <button
                   onClick={() => handleAddToSchedule(popup.id)}
                   disabled={addingId === popup.id}
                   className={`
                     flex-1 flex items-center justify-center gap-1.5
-                    py-2 rounded-lg text-[11px] font-semibold transition-all
+                    py-2 rounded-xl text-[11px] font-semibold transition-all
                     ${scheduledEventIds.has(Number(popup.id))
-                      ? 'bg-primary/15 text-primary border border-primary/30'
+                      ? 'bg-primary text-white'
                       : 'bg-primary/10 text-primary hover:bg-primary/20'
                     }
                     disabled:opacity-60
@@ -468,14 +512,11 @@ export default function CalendarPage() {
                     : <><CalendarPlus size={11} />予定に追加</>
                   }
                 </button>
-
-                {/* 詳細ボタン */}
                 <button
                   onClick={() => router.push(`/events/${popup.id}`)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-semibold bg-app-bg text-app-text hover:bg-app-border/50 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-semibold bg-gray-100 text-app-text hover:bg-gray-200 transition-colors"
                 >
-                  詳細へ
-                  <ArrowRight size={11} />
+                  詳細へ <ArrowRight size={11} />
                 </button>
               </div>
             </div>

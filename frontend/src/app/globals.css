@@ -48,7 +48,9 @@ body {
 }
 
 .fc-custom .fc-daygrid-day-frame {
-  min-height: 80px;
+  min-height: 96px !important;
+  max-height: 96px !important;
+  overflow: hidden;
 }
 
 /* 日付数字（デフォルト） */
