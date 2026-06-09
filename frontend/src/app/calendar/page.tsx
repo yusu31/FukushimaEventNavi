@@ -211,7 +211,7 @@ export default function CalendarPage() {
       try {
         const [evRes, schRes] = await Promise.allSettled([
           apiClient.get('/api/v1/events'),
-          isLoggedIn ? apiClient.get('/api/v1/schedules') : Promise.resolve({ data: [] }),
+          apiClient.get('/api/v1/schedules').catch(() => ({ data: [] })),
         ])
         const events: Event[] = evRes.status === 'fulfilled' ? evRes.value.data : []
         setAllEvents(events)
@@ -225,7 +225,7 @@ export default function CalendarPage() {
       }
     }
     fetchAll()
-  }, [isLoggedIn])
+  }, [])
 
   // ─── カレンダーイベント構築 ──────────────────────────────────────
   const buildCalendarEvents = useCallback((
@@ -339,16 +339,25 @@ export default function CalendarPage() {
     })
   }
 
-  const handleEventClick = (arg: EventClickArg) => openPopup(arg.el, arg.event)
-  const handleMouseEnter = (arg: EventHoveringArg) => openPopup(arg.el, arg.event)
+  const handleEventClick = (arg: EventClickArg) => openPopup(arg.el, arg.event as unknown as Parameters<typeof openPopup>[1])
+  const handleMouseEnter = (arg: EventHoveringArg) => openPopup(arg.el, arg.event as unknown as Parameters<typeof openPopup>[1])
   const handleMouseLeave = () => {
     popupTimerRef.current = setTimeout(() => setPopup(null), 150)
   }
 
   // ─── 参加予定に追加 / 解除 ──────────────────────────────────────
   const handleAddToSchedule = async (eventId: string) => {
+    // TODO(完成時): 未ログイン時のAPIガードを復元すること（#44）
     if (!isLoggedIn) {
-      toast('ログインするとカレンダーに追加できます 📅', { icon: '🔐', style: { fontSize: '13px' } })
+      const id = Number(eventId)
+      const isAdded = scheduledEventIds.has(id)
+      if (isAdded) {
+        setScheduledEventIds(prev => { const s = new Set(prev); s.delete(id); return s })
+        toast('参加予定を解除しました', { icon: '📤', style: { fontSize: '13px' } })
+      } else {
+        setScheduledEventIds(prev => new Set(prev).add(id))
+        toast('カレンダーに追加しました 🎉', { style: { fontSize: '13px', fontWeight: '600' } })
+      }
       return
     }
     const id = Number(eventId)
@@ -528,7 +537,7 @@ export default function CalendarPage() {
               </span>
             )}
             {/* 参加予定凡例 */}
-            {isLoggedIn && scheduledEventIds.size > 0 && (
+            {scheduledEventIds.size > 0 && (
               <div className="flex items-center gap-1.5 text-[11px] text-app-sub">
                 <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: DEFAULT_COLOR }} />
                 参加予定 {scheduledEventIds.size}件
@@ -636,12 +645,10 @@ export default function CalendarPage() {
                 <p className="text-[11px] text-app-sub">この期間のイベント</p>
                 <p className="text-[18px] font-bold text-app-text mt-0.5">{visibleCount}件</p>
               </div>
-              {isLoggedIn && (
-                <div className="text-right">
-                  <p className="text-[11px] text-app-sub">参加予定</p>
-                  <p className="text-[18px] font-bold text-primary mt-0.5">{scheduledEventIds.size}件</p>
-                </div>
-              )}
+              <div className="text-right">
+                <p className="text-[11px] text-app-sub">参加予定</p>
+                <p className="text-[18px] font-bold text-primary mt-0.5">{scheduledEventIds.size}件</p>
+              </div>
             </div>
           )}
         </div>

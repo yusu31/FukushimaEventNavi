@@ -2,10 +2,13 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { Heart, LogIn } from 'lucide-react'
+import { Heart } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import EventCard from '@/components/events/EventCard'
 import { useAuth } from '@/contexts/AuthContext'
 import { useFavorites } from '@/contexts/FavoritesContext'
+
+// TODO(完成時): 未ログイン時の「ログインが必要です」ブロックを復元すること（#44）
 
 function SkeletonCard() {
   return (
@@ -22,10 +25,13 @@ function SkeletonCard() {
 }
 
 export default function FavoritesPage() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   const { isLoggedIn, isLoading: authLoading } = useAuth()
   const { favorites, isLoading } = useFavorites()
 
-  const showSkeleton = authLoading || (isLoggedIn && isLoading)
+  const showSkeleton = !mounted || authLoading || isLoading
 
   return (
     <div className="min-h-screen bg-app-bg px-6 py-8">
@@ -43,44 +49,11 @@ export default function FavoritesPage() {
           <div>
             <h1 className="text-[22px] font-bold text-app-text leading-tight">お気に入り</h1>
             <p className="text-[12px] text-app-sub mt-0.5">
-              {isLoggedIn && !isLoading ? `${favorites.length}件保存中` : '気になるイベントをまとめて管理'}
+              {!isLoading ? `${favorites.length}件保存中` : '気になるイベントをまとめて管理'}
             </p>
           </div>
         </motion.div>
       </div>
-
-      {/* 未ログイン */}
-      {!authLoading && !isLoggedIn && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
-          className="max-w-md mx-auto mt-20 text-center"
-        >
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-red-100 to-pink-100 flex items-center justify-center">
-            <Heart size={36} className="text-red-400" />
-          </div>
-          <h2 className="text-[18px] font-bold text-app-text mb-2">ログインが必要です</h2>
-          <p className="text-[13px] text-app-sub mb-6 leading-relaxed">
-            お気に入り機能を使うには<br />ログインまたは新規登録が必要です。
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/auth/sign-in"
-              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-primary text-white text-[13px] font-semibold hover:opacity-90 transition-opacity"
-            >
-              <LogIn size={15} />
-              ログイン
-            </Link>
-            <Link
-              href="/auth/sign-up"
-              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full border border-primary text-primary text-[13px] font-semibold hover:bg-primary/5 transition-colors"
-            >
-              新規登録
-            </Link>
-          </div>
-        </motion.div>
-      )}
 
       {/* スケルトン */}
       {showSkeleton && (
@@ -90,7 +63,7 @@ export default function FavoritesPage() {
       )}
 
       {/* 空の状態 */}
-      {!showSkeleton && isLoggedIn && favorites.length === 0 && (
+      {!showSkeleton && favorites.length === 0 && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -102,7 +75,10 @@ export default function FavoritesPage() {
           </div>
           <h2 className="text-[18px] font-bold text-app-text mb-2">まだお気に入りがありません</h2>
           <p className="text-[13px] text-app-sub mb-6 leading-relaxed">
-            イベントカードの♡ボタンを押すと<br />ここに保存されます。
+            {isLoggedIn
+              ? <>イベントカードの♡ボタンを押すと<br />ここに保存されます。</>
+              : <>♡ボタンを押してお気に入りを追加できます。<br />ログインするとデータが保存されます。</>
+            }
           </p>
           <Link
             href="/events"
@@ -114,7 +90,7 @@ export default function FavoritesPage() {
       )}
 
       {/* お気に入り一覧 */}
-      {!showSkeleton && isLoggedIn && favorites.length > 0 && (
+      {!showSkeleton && favorites.length > 0 && (
         <div className="max-w-6xl mx-auto">
           <AnimatePresence mode="popLayout">
             <motion.div

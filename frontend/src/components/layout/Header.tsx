@@ -24,7 +24,7 @@ export default function Header() {
           <span className="w-7 h-7 bg-white/25 rounded-lg flex items-center justify-center text-base">
             🌿
           </span>
-          福島イベントナビ
+          <span className="text-[21px] font-black">F</span>ukushima <span className="text-[21px] font-black">E</span>vent <span className="text-[21px] font-black">F</span>inder
         </Link>
 
         <nav className="flex items-center gap-1">

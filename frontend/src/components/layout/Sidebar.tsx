@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { Home, CalendarDays, CalendarRange, Heart, Sprout } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
@@ -15,9 +16,18 @@ const navItems: { href: string; label: string; Icon: LucideIcon }[] = [
 ]
 
 export default function Sidebar() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   const pathname = usePathname()
   const { isLoggedIn, currentUser, signOut, isLoading } = useAuth()
   const { favorites } = useFavorites()
+
+  if (!mounted) {
+    return (
+      <aside className="w-[240px] shrink-0 h-screen sticky top-0 bg-white/65 backdrop-blur-xl border-r border-white/50 shadow-[1px_0_20px_rgba(0,0,0,0.06)]" />
+    )
+  }
 
   const handleSignOut = async () => {
     try {
