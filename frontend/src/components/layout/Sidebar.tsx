@@ -43,8 +43,8 @@ export default function Sidebar() {
           ">
             🌿
           </span>
-          <span className="font-bold text-[15px] text-app-text tracking-wide">
-            福島イベントナビ
+          <span className="font-bold text-[14px] text-app-text tracking-wide leading-tight">
+            Fukushima<br />Event Finder
           </span>
         </Link>
       </div>
@@ -134,7 +134,7 @@ export default function Sidebar() {
           </>
         )}
         <p className="text-[10px] text-app-sub/60 text-center mt-4">
-          © {new Date().getFullYear()} 福島イベントナビ
+          © {new Date().getFullYear()} Fukushima Event Finder
         </p>
       </div>
     </aside>

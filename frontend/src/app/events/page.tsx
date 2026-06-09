@@ -208,6 +208,7 @@ export default function EventsPage() {
                       variants={cardVariants}
                       layout
                       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.18 } }}
+                      className="h-full"
                     >
                       <EventCard event={event} />
                     </motion.div>

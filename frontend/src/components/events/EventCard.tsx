@@ -49,10 +49,11 @@ export default function EventCard({ event }: Props) {
   }
 
   return (
-    <Link href={`/events/${event.id}`} className="block outline-none group">
+    <Link href={`/events/${event.id}`} className="block outline-none group h-full">
       <motion.div
         className="
           relative rounded-[20px] overflow-hidden cursor-pointer
+          flex flex-col h-full
           bg-white/85 backdrop-blur-sm
           border border-white/60
           shadow-[0_2px_12px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)]
@@ -122,7 +123,7 @@ export default function EventCard({ event }: Props) {
         </div>
 
         {/* テキストエリア */}
-        <div className="px-4 pt-3.5 pb-4">
+        <div className="px-4 pt-3.5 pb-4 flex flex-col flex-1">
           <div className="text-[14px] font-bold text-app-text leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors duration-150">
             {event.title}
           </div>
