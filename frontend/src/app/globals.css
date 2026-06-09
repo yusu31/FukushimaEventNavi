@@ -21,96 +21,156 @@ body {
 }
 
 /* ─── FullCalendar カスタムスタイル ─────────────────────────── */
-.fc-custom .fc-toolbar-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #2c3333;
+
+/* グリッドのボーダーを統一 */
+.fc-custom table,
+.fc-custom td,
+.fc-custom th,
+.fc-custom .fc-scrollgrid,
+.fc-custom .fc-scrollgrid-section > td {
+  border-color: #e8efed !important;
 }
 
-.fc-custom .fc-button {
-  background: #5f8b8b !important;
-  border-color: #5f8b8b !important;
-  border-radius: 8px !important;
-  font-size: 13px !important;
-  padding: 4px 12px !important;
-  box-shadow: none !important;
-}
-
-.fc-custom .fc-button:hover {
-  background: #4a7070 !important;
-  border-color: #4a7070 !important;
-}
-
-.fc-custom .fc-button-active,
-.fc-custom .fc-button:focus {
-  background: #4a7070 !important;
-  border-color: #4a7070 !important;
-  box-shadow: none !important;
-}
-
+/* 曜日ヘッダー */
 .fc-custom .fc-col-header-cell-cushion {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: #7a8a8a;
-  text-decoration: none;
+  text-decoration: none !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 0;
 }
 
+/* 日付セル */
+.fc-custom .fc-daygrid-day {
+  cursor: default;
+}
+
+.fc-custom .fc-daygrid-day-frame {
+  min-height: 80px;
+}
+
+/* 日付数字（デフォルト） */
 .fc-custom .fc-daygrid-day-number {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 500;
   color: #2c3333;
-  text-decoration: none;
+  text-decoration: none !important;
+  padding: 6px 8px;
+  line-height: 1;
 }
 
+/* 今日のセル背景 */
 .fc-custom .fc-day-today {
-  background: rgba(95, 139, 139, 0.08) !important;
+  background: rgba(95, 139, 139, 0.06) !important;
 }
 
+/* 今日の日付数字 — バブルスタイル */
 .fc-custom .fc-day-today .fc-daygrid-day-number {
   background: #5f8b8b;
-  color: #ffffff;
+  color: #ffffff !important;
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
+  padding: 0;
+  margin: 4px;
+  text-decoration: none !important;
+  line-height: 1;
 }
 
+/* 土曜・日曜の色 */
+.fc-custom .fc-day-sat .fc-daygrid-day-number { color: #3b82f6; }
+.fc-custom .fc-day-sun .fc-daygrid-day-number { color: #ef4444; }
+.fc-custom .fc-day-sat.fc-day-today .fc-daygrid-day-number,
+.fc-custom .fc-day-sun.fc-day-today .fc-daygrid-day-number {
+  color: #ffffff !important;
+}
+
+/* 当月外の日 */
+.fc-custom .fc-day-other .fc-daygrid-day-number {
+  color: #c0cccc;
+}
+
+/* イベントバー（月ビュー） */
 .fc-custom .fc-daygrid-event {
-  border-radius: 6px !important;
+  border-radius: 5px !important;
   font-size: 11px !important;
   font-weight: 600 !important;
-  padding: 1px 5px !important;
-  cursor: pointer;
+  padding: 2px 6px !important;
+  cursor: pointer !important;
+  margin-bottom: 1px !important;
+  transition: filter 0.1s;
+}
+
+.fc-custom .fc-daygrid-event:hover {
+  filter: brightness(1.12) !important;
 }
 
 .fc-custom .fc-event-title {
-  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.fc-custom .fc-more-link {
-  font-size: 11px;
-  color: #5f8b8b;
-  font-weight: 600;
+/* 「+N件」リンク */
+.fc-custom .fc-daygrid-more-link {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #5f8b8b !important;
+  padding: 0 6px !important;
 }
 
-.fc-custom table {
-  border-color: #dde6e4 !important;
+/* ─── 週・日ビュー（timeGrid）のスタイル ────────────────── */
+
+/* 時刻ラベル */
+.fc-custom .fc-timegrid-slot-label-cushion {
+  font-size: 10px;
+  color: #a0b0b0;
+  font-weight: 500;
+  padding-right: 8px;
 }
 
-.fc-custom .fc-scrollgrid {
-  border-radius: 12px;
-  overflow: hidden;
-  border-color: #dde6e4 !important;
+/* スロット（1時間ごとの横線） */
+.fc-custom .fc-timegrid-slot {
+  height: 44px !important;
 }
 
-.fc-custom td, .fc-custom th {
-  border-color: #dde6e4 !important;
+/* 現在時刻のインジケーター */
+.fc-custom .fc-timegrid-now-indicator-line {
+  border-color: #ef4444 !important;
+  border-width: 2px !important;
+}
+
+.fc-custom .fc-timegrid-now-indicator-arrow {
+  border-top-color: #ef4444 !important;
+  border-bottom-color: #ef4444 !important;
+}
+
+/* 週・日ビューのイベントブロック */
+.fc-custom .fc-timegrid-event {
+  border-radius: 6px !important;
+  border: none !important;
+  padding: 3px 6px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
+  transition: filter 0.1s;
+}
+
+.fc-custom .fc-timegrid-event:hover {
+  filter: brightness(1.12) !important;
+}
+
+/* 週ビューの今日の列 */
+.fc-custom .fc-day-today.fc-timegrid-col {
+  background: rgba(95, 139, 139, 0.06) !important;
 }
 
 @layer utilities {
