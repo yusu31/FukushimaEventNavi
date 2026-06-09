@@ -172,7 +172,7 @@ export default function EventsPage() {
       <main className="max-w-[1160px] mx-auto px-8 py-8 pb-28">
         {isLoading ? (
           // スケルトンローディング（10枚のシルエット）
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(255px,1fr))] gap-x-[28px] gap-y-[56px] py-6">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(255px,1fr))] gap-x-[28px] gap-y-[24px] py-6">
             {Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : (
@@ -196,7 +196,7 @@ export default function EventsPage() {
               // layout でフィルター後のカードが滑らかに再配置
               <motion.div
                 key={`${area}-${category}-${search}`}
-                className="grid grid-cols-[repeat(auto-fill,minmax(255px,1fr))] gap-x-[28px] gap-y-[56px] py-6"
+                className="grid grid-cols-[repeat(auto-fill,minmax(255px,1fr))] gap-x-[28px] gap-y-[24px] py-6"
                 variants={gridVariants}
                 initial="hidden"
                 animate="show"
