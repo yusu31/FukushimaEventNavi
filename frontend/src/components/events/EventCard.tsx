@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import {
   Monitor, Music, Trophy, Leaf, Utensils, Landmark,
@@ -12,6 +13,8 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Event } from '@/types/event'
+import { useAuth } from '@/contexts/AuthContext'
+import { useFavorites } from '@/contexts/FavoritesContext'
 
 const CATEGORY_STYLES: Record<string, { gradient: string; text: string; Icon: LucideIcon }> = {
   'テクノロジー':      { gradient: 'from-[#0ea5e9] to-[#6366f1]', text: 'text-white', Icon: Monitor },
@@ -38,22 +41,39 @@ function formatDate(dateStr: string) {
 type Props = { event: Event }
 
 export default function EventCard({ event }: Props) {
-  const [favorited, setFavorited] = useState(false)
+  const router = useRouter()
+  const { isLoggedIn } = useAuth()
+  const { isFavorited, toggleFavorite } = useFavorites()
+  const [isToggling, setIsToggling] = useState(false)
+
+  const favorited = isFavorited(event.id)
   const style = CATEGORY_STYLES[event.category] ?? DEFAULT_STYLE
 
-  function handleFavorite(e: React.MouseEvent) {
+  async function handleFavorite(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
-    const next = !favorited
-    setFavorited(next)
-    toast(next ? 'お気に入りに追加しました' : 'お気に入りを解除しました', {
-      id: 'fav',
-      icon: next
-        ? <Heart size={14} className="text-red-500 fill-red-500" />
-        : <Heart size={14} className="text-gray-400" />,
-      style: { fontSize: '13px', fontWeight: '600' },
-      duration: 1500,
-    })
+    if (!isLoggedIn) {
+      router.push('/auth/sign-in')
+      return
+    }
+    if (isToggling) return
+    setIsToggling(true)
+    try {
+      await toggleFavorite(event.id)
+      const next = !favorited
+      toast(next ? 'お気に入りに追加しました' : 'お気に入りを解除しました', {
+        id: `fav-${event.id}`,
+        icon: next
+          ? <Heart size={14} className="text-red-500 fill-red-500" />
+          : <Heart size={14} className="text-gray-400" />,
+        style: { fontSize: '13px', fontWeight: '600' },
+        duration: 1500,
+      })
+    } catch {
+      toast.error('操作に失敗しました', { id: `fav-err-${event.id}` })
+    } finally {
+      setIsToggling(false)
+    }
   }
 
   return (

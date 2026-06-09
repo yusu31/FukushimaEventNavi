@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { Home, CalendarDays, CalendarRange, Heart, Sprout } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useFavorites } from '@/contexts/FavoritesContext'
 
 const navItems: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: '/', label: 'ホーム', Icon: Home },
@@ -16,6 +17,7 @@ const navItems: { href: string; label: string; Icon: LucideIcon }[] = [
 export default function Sidebar() {
   const pathname = usePathname()
   const { isLoggedIn, currentUser, signOut, isLoading } = useAuth()
+  const { favorites } = useFavorites()
 
   const handleSignOut = async () => {
     try {
@@ -61,7 +63,7 @@ export default function Sidebar() {
                 <Link
                   href={href}
                   className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium
+                    relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium
                     transition-all duration-150
                     ${isActive
                       ? 'bg-primary/12 text-primary shadow-[inset_0_1px_3px_rgba(95,139,139,0.1)]'
@@ -71,6 +73,11 @@ export default function Sidebar() {
                 >
                   <Icon size={16} />
                   {label}
+                  {href === '/favorites' && isLoggedIn && favorites.length > 0 && (
+                    <span className="ml-auto min-w-[18px] h-[18px] rounded-full bg-red-400 text-white text-[10px] font-bold flex items-center justify-center px-1">
+                      {favorites.length > 9 ? '9+' : favorites.length}
+                    </span>
+                  )}
                 </Link>
               </li>
             )

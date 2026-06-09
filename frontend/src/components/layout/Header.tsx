@@ -1,10 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { Heart } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useFavorites } from '@/contexts/FavoritesContext'
 
 export default function Header() {
   const { isLoggedIn, currentUser, signOut, isLoading } = useAuth()
+  const { favorites } = useFavorites()
 
   const handleSignOut = async () => {
     try {
@@ -36,6 +39,18 @@ export default function Header() {
             <>
               {isLoggedIn ? (
                 <div className="flex items-center gap-3 ml-2">
+                  <Link
+                    href="/favorites"
+                    className="relative text-white/80 hover:text-white hover:bg-white/18 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5"
+                  >
+                    <Heart size={14} className={favorites.length > 0 ? 'fill-red-300 text-red-300' : ''} />
+                    <span className="text-[13px] font-medium">お気に入り</span>
+                    {favorites.length > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-400 text-white text-[10px] font-bold flex items-center justify-center">
+                        {favorites.length > 9 ? '9+' : favorites.length}
+                      </span>
+                    )}
+                  </Link>
                   <span className="text-white/70 text-[13px]">
                     {currentUser?.name || currentUser?.email}
                   </span>
