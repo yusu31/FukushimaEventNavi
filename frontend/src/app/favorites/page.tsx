@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { Heart } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import EventCard from '@/components/events/EventCard'
 import { useAuth } from '@/contexts/AuthContext'
 import { useFavorites } from '@/contexts/FavoritesContext'
@@ -24,10 +25,13 @@ function SkeletonCard() {
 }
 
 export default function FavoritesPage() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   const { isLoggedIn, isLoading: authLoading } = useAuth()
   const { favorites, isLoading } = useFavorites()
 
-  const showSkeleton = authLoading || isLoading
+  const showSkeleton = !mounted || authLoading || isLoading
 
   return (
     <div className="min-h-screen bg-app-bg px-6 py-8">
