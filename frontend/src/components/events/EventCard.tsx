@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+// TODO(完成時): import { useRouter } from 'next/navigation' を復元すること（#42）
 import toast from 'react-hot-toast'
 import {
   Monitor, Music, Trophy, Leaf, Utensils, Landmark,
@@ -41,7 +41,7 @@ function formatDate(dateStr: string) {
 type Props = { event: Event }
 
 export default function EventCard({ event }: Props) {
-  const router = useRouter()
+  // TODO(完成時): const router = useRouter() を復元すること（#42）
   const { isLoggedIn } = useAuth()
   const { isFavorited, toggleFavorite } = useFavorites()
   const [isToggling, setIsToggling] = useState(false)
@@ -52,8 +52,15 @@ export default function EventCard({ event }: Props) {
   async function handleFavorite(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
+    // TODO(完成時): 下の2行を復元してリダイレクトに戻すこと（#42）
+    // if (!isLoggedIn) { router.push('/auth/sign-in'); return }
     if (!isLoggedIn) {
-      router.push('/auth/sign-in')
+      toast('ログインするとお気に入りに追加できます', {
+        id: 'fav-need-login',
+        icon: <Heart size={14} className="text-red-400" />,
+        style: { fontSize: '13px', fontWeight: '600' },
+        duration: 2000,
+      })
       return
     }
     if (isToggling) return
