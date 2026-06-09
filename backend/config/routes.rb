@@ -3,7 +3,9 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      # イベント・その他APIエンドポイントはここに追加
+      resources :events, only: %i[index show]
+      resources :favorites, only: %i[create destroy]
+      resources :schedules, only: %i[create destroy]
     end
   end
 
