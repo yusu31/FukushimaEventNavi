@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function Home() {
   return (
-    <div className="bg-app-bg min-h-screen flex flex-col items-center justify-center px-4 text-center">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center">
       <div className="text-6xl mb-6">🌿</div>
       <h1 className="text-[32px] font-bold text-app-text mb-3">
         福島イベントナビ

@@ -108,10 +108,10 @@ export default function EventsPage() {
   }, [events, area, category, search])
 
   return (
-    <div className="bg-app-bg min-h-screen">
+    <div className="min-h-screen">
 
       {/* ─── フィルターバー ─── */}
-      <div className="bg-white border-b border-app-border sticky top-0 z-40">
+      <div className="bg-white/70 backdrop-blur-xl border-b border-white/50 sticky top-0 z-40">
         {/* 検索バー（Spotify 方式：上部に常設） */}
         <div className="px-8 pt-3.5 pb-2">
           <div className="relative max-w-[480px]">
