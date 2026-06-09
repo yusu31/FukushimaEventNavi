@@ -4,23 +4,29 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import {
+  Monitor, Music, Trophy, Leaf, Utensils, Landmark,
+  Users, BookOpen, Sparkles, Palette, Tag,
+  CalendarDays, MapPin, Globe, CalendarPlus, Heart,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import apiClient from '@/lib/axios'
 import { Event } from '@/types/event'
 
-const CATEGORY_STYLES: Record<string, { bg: string; text: string; emoji: string }> = {
-  'テクノロジー':    { bg: 'bg-[#e5f3f1]', text: 'text-[#2a7a68]', emoji: '💻' },
-  '音楽':           { bg: 'bg-[#f3ede5]', text: 'text-[#7a5a2a]', emoji: '🎵' },
-  'スポーツ':       { bg: 'bg-[#eaf3e5]', text: 'text-[#3a7a2a]', emoji: '⚽' },
-  '自然・アウトドア': { bg: 'bg-[#e8f3e8]', text: 'text-[#2a6a2a]', emoji: '🏕' },
-  '食・グルメ':     { bg: 'bg-[#f3e8e5]', text: 'text-[#7a3a2a]', emoji: '🍽' },
-  '文化・伝統':     { bg: 'bg-[#ede5f3]', text: 'text-[#5a2a7a]', emoji: '🏯' },
-  'ファミリー':     { bg: 'bg-[#e8f3f0]', text: 'text-[#2a6a50]', emoji: '👨‍👩‍👧' },
-  '教育':           { bg: 'bg-[#e5eef3]', text: 'text-[#2a4a7a]', emoji: '📚' },
-  '祭り・イベント': { bg: 'bg-[#f3f0e5]', text: 'text-[#7a6a2a]', emoji: '🎆' },
-  'アート':         { bg: 'bg-[#f0e5f3]', text: 'text-[#6a2a7a]', emoji: '🎨' },
-  'その他':         { bg: 'bg-[#f0f0f0]', text: 'text-[#5a5a5a]', emoji: '📌' },
+const CATEGORY_STYLES: Record<string, { bg: string; text: string; Icon: LucideIcon }> = {
+  'テクノロジー':    { bg: 'bg-[#e5f3f1]', text: 'text-[#2a7a68]', Icon: Monitor },
+  '音楽':           { bg: 'bg-[#f3ede5]', text: 'text-[#7a5a2a]', Icon: Music },
+  'スポーツ':       { bg: 'bg-[#eaf3e5]', text: 'text-[#3a7a2a]', Icon: Trophy },
+  '自然・アウトドア': { bg: 'bg-[#e8f3e8]', text: 'text-[#2a6a2a]', Icon: Leaf },
+  '食・グルメ':     { bg: 'bg-[#f3e8e5]', text: 'text-[#7a3a2a]', Icon: Utensils },
+  '文化・伝統':     { bg: 'bg-[#ede5f3]', text: 'text-[#5a2a7a]', Icon: Landmark },
+  'ファミリー':     { bg: 'bg-[#e8f3f0]', text: 'text-[#2a6a50]', Icon: Users },
+  '教育':           { bg: 'bg-[#e5eef3]', text: 'text-[#2a4a7a]', Icon: BookOpen },
+  '祭り・イベント': { bg: 'bg-[#f3f0e5]', text: 'text-[#7a6a2a]', Icon: Sparkles },
+  'アート':         { bg: 'bg-[#f0e5f3]', text: 'text-[#6a2a7a]', Icon: Palette },
+  'その他':         { bg: 'bg-[#f0f0f0]', text: 'text-[#5a5a5a]', Icon: Tag },
 }
-const DEFAULT_STYLE = { bg: 'bg-primary-light', text: 'text-primary-dark', emoji: '📌' }
+const DEFAULT_STYLE = { bg: 'bg-primary-light', text: 'text-primary-dark', Icon: Tag }
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('ja-JP', {
@@ -91,15 +97,16 @@ export default function EventDetailPage() {
               />
             </div>
           ) : (
-            <div className="w-full aspect-[16/9] bg-gradient-to-br from-[#cde0de] to-[#b4cece] flex items-center justify-center text-[80px]">
-              {style.emoji}
+            <div className="w-full aspect-[16/9] bg-gradient-to-br from-[#cde0de] to-[#b4cece] flex items-center justify-center">
+              <style.Icon size={80} className="text-white/80 drop-shadow-lg" />
             </div>
           )}
 
           <div className="p-7">
             {/* カテゴリタグ */}
-            <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full mb-4 ${style.bg} ${style.text}`}>
-              {style.emoji} {event.category}
+            <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full mb-4 ${style.bg} ${style.text}`}>
+              <style.Icon size={12} />
+              {event.category}
             </span>
 
             {/* タイトル */}
@@ -110,24 +117,24 @@ export default function EventDetailPage() {
             {/* メタ情報 */}
             <div className="flex flex-col gap-3 pb-5 border-b border-app-border mb-5">
               <div className="flex items-start gap-2.5 text-[14px] text-app-sub">
-                <span>📅</span>
+                <CalendarDays size={16} className="shrink-0 mt-0.5" />
                 <span>{formatDate(event.start_at)}{event.end_at && ` 〜 ${formatDate(event.end_at)}`}</span>
               </div>
               {event.location && (
                 <div className="flex items-start gap-2.5 text-[14px] text-app-sub">
-                  <span>📍</span>
+                  <MapPin size={16} className="shrink-0 mt-0.5" />
                   <span>{event.location}</span>
                 </div>
               )}
               {event.capacity && (
                 <div className="flex items-start gap-2.5 text-[14px] text-app-sub">
-                  <span>👥</span>
+                  <Users size={16} className="shrink-0 mt-0.5" />
                   <span>定員 {event.capacity}名</span>
                 </div>
               )}
               {event.event_url && (
                 <div className="flex items-start gap-2.5 text-[14px]">
-                  <span>🌐</span>
+                  <Globe size={16} className="shrink-0 mt-0.5 text-app-sub" />
                   <a
                     href={event.event_url}
                     target="_blank"
@@ -149,11 +156,13 @@ export default function EventDetailPage() {
 
             {/* アクションボタン */}
             <div className="flex gap-3">
-              <button className="bg-primary hover:bg-primary-dark text-white text-[14px] font-semibold px-6 py-2.5 rounded-[10px] transition-colors">
-                📅 参加予定に追加
+              <button className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white text-[14px] font-semibold px-6 py-2.5 rounded-[10px] transition-colors">
+                <CalendarPlus size={15} />
+                参加予定に追加
               </button>
-              <button className="text-primary border-[1.5px] border-primary hover:bg-primary-light text-[14px] font-semibold px-6 py-2.5 rounded-[10px] transition-colors">
-                ♡ お気に入り
+              <button className="inline-flex items-center gap-2 text-primary border-[1.5px] border-primary hover:bg-primary-light text-[14px] font-semibold px-6 py-2.5 rounded-[10px] transition-colors">
+                <Heart size={15} />
+                お気に入り
               </button>
             </div>
           </div>

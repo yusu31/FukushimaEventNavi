@@ -2,13 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Home, CalendarDays, CalendarRange, Heart, Sprout } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
-const navItems = [
-  { href: '/', label: 'ホーム', icon: '🏠' },
-  { href: '/events', label: 'イベント一覧', icon: '📅' },
-  { href: '/calendar', label: 'カレンダー', icon: '🗓️' },
-  { href: '/favorites', label: 'お気に入り', icon: '❤️' },
+const navItems: { href: string; label: string; Icon: LucideIcon }[] = [
+  { href: '/', label: 'ホーム', Icon: Home },
+  { href: '/events', label: 'イベント一覧', Icon: CalendarDays },
+  { href: '/calendar', label: 'カレンダー', Icon: CalendarRange },
+  { href: '/favorites', label: 'お気に入り', Icon: Heart },
 ]
 
 export default function Sidebar() {
@@ -38,10 +40,10 @@ export default function Sidebar() {
           className="flex items-center gap-2.5 group"
         >
           <span className="
-            w-8 h-8 rounded-xl flex items-center justify-center text-[17px]
+            w-8 h-8 rounded-xl flex items-center justify-center
             bg-primary/15 group-hover:bg-primary/25 transition-colors
           ">
-            🌿
+            <Sprout size={17} className="text-primary" />
           </span>
           <span className="font-bold text-[14px] text-app-text tracking-wide leading-tight">
             Fukushima<br />Event Finder
@@ -52,7 +54,7 @@ export default function Sidebar() {
       {/* ナビゲーション */}
       <nav className="flex-1 px-3 py-2">
         <ul className="flex flex-col gap-0.5">
-          {navItems.map(({ href, label, icon }) => {
+          {navItems.map(({ href, label, Icon }) => {
             const isActive = pathname === href || (href !== '/' && pathname.startsWith(href))
             return (
               <li key={href}>
@@ -67,7 +69,7 @@ export default function Sidebar() {
                     }
                   `}
                 >
-                  <span className="text-[16px] leading-none">{icon}</span>
+                  <Icon size={16} />
                   {label}
                 </Link>
               </li>

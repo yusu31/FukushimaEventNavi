@@ -5,22 +5,28 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import {
+  Monitor, Music, Trophy, Leaf, Utensils, Landmark,
+  Users, BookOpen, Sparkles, Palette, Tag,
+  CalendarDays, MapPin, Heart,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Event } from '@/types/event'
 
-const CATEGORY_STYLES: Record<string, { gradient: string; text: string; emoji: string }> = {
-  'テクノロジー':      { gradient: 'from-[#0ea5e9] to-[#6366f1]', text: 'text-white', emoji: '💻' },
-  '音楽':             { gradient: 'from-[#f59e0b] to-[#ef4444]', text: 'text-white', emoji: '🎵' },
-  'スポーツ':         { gradient: 'from-[#22c55e] to-[#0ea5e9]', text: 'text-white', emoji: '⚽' },
-  '自然・アウトドア': { gradient: 'from-[#16a34a] to-[#15803d]', text: 'text-white', emoji: '🏕' },
-  '食・グルメ':       { gradient: 'from-[#f97316] to-[#dc2626]', text: 'text-white', emoji: '🍽' },
-  '文化・伝統':       { gradient: 'from-[#8b5cf6] to-[#6d28d9]', text: 'text-white', emoji: '🏯' },
-  'ファミリー':       { gradient: 'from-[#06b6d4] to-[#0ea5e9]', text: 'text-white', emoji: '👨‍👩‍👧' },
-  '教育':             { gradient: 'from-[#3b82f6] to-[#1d4ed8]', text: 'text-white', emoji: '📚' },
-  '祭り・イベント':   { gradient: 'from-[#f59e0b] to-[#d97706]', text: 'text-white', emoji: '🎆' },
-  'アート':           { gradient: 'from-[#ec4899] to-[#a855f7]', text: 'text-white', emoji: '🎨' },
-  'その他':           { gradient: 'from-[#6b7280] to-[#4b5563]', text: 'text-white', emoji: '📌' },
+const CATEGORY_STYLES: Record<string, { gradient: string; text: string; Icon: LucideIcon }> = {
+  'テクノロジー':      { gradient: 'from-[#0ea5e9] to-[#6366f1]', text: 'text-white', Icon: Monitor },
+  '音楽':             { gradient: 'from-[#f59e0b] to-[#ef4444]', text: 'text-white', Icon: Music },
+  'スポーツ':         { gradient: 'from-[#22c55e] to-[#0ea5e9]', text: 'text-white', Icon: Trophy },
+  '自然・アウトドア': { gradient: 'from-[#16a34a] to-[#15803d]', text: 'text-white', Icon: Leaf },
+  '食・グルメ':       { gradient: 'from-[#f97316] to-[#dc2626]', text: 'text-white', Icon: Utensils },
+  '文化・伝統':       { gradient: 'from-[#8b5cf6] to-[#6d28d9]', text: 'text-white', Icon: Landmark },
+  'ファミリー':       { gradient: 'from-[#06b6d4] to-[#0ea5e9]', text: 'text-white', Icon: Users },
+  '教育':             { gradient: 'from-[#3b82f6] to-[#1d4ed8]', text: 'text-white', Icon: BookOpen },
+  '祭り・イベント':   { gradient: 'from-[#f59e0b] to-[#d97706]', text: 'text-white', Icon: Sparkles },
+  'アート':           { gradient: 'from-[#ec4899] to-[#a855f7]', text: 'text-white', Icon: Palette },
+  'その他':           { gradient: 'from-[#6b7280] to-[#4b5563]', text: 'text-white', Icon: Tag },
 }
-const DEFAULT_STYLE = { gradient: 'from-[#5f8b8b] to-[#4a7070]', text: 'text-white', emoji: '📌' }
+const DEFAULT_STYLE = { gradient: 'from-[#5f8b8b] to-[#4a7070]', text: 'text-white', Icon: Tag }
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('ja-JP', {
@@ -40,9 +46,11 @@ export default function EventCard({ event }: Props) {
     e.stopPropagation()
     const next = !favorited
     setFavorited(next)
-    toast(next ? '♥ お気に入りに追加しました' : 'お気に入りを解除しました', {
+    toast(next ? 'お気に入りに追加しました' : 'お気に入りを解除しました', {
       id: 'fav',
-      icon: next ? '❤️' : '🤍',
+      icon: next
+        ? <Heart size={14} className="text-red-500 fill-red-500" />
+        : <Heart size={14} className="text-gray-400" />,
       style: { fontSize: '13px', fontWeight: '600' },
       duration: 1500,
     })
@@ -82,7 +90,7 @@ export default function EventCard({ event }: Props) {
               whileHover={{ scale: 1.06 }}
               transition={{ type: 'spring', stiffness: 320, damping: 30 }}
             >
-              <span className="text-[52px] drop-shadow-lg">{style.emoji}</span>
+              <style.Icon size={52} className="text-white/90 drop-shadow-lg" />
             </motion.div>
           )}
 
@@ -94,14 +102,15 @@ export default function EventCard({ event }: Props) {
             text-[11px] font-bold ${style.text}
             shadow-[0_2px_8px_rgba(0,0,0,0.2)]
           `}>
-            {style.emoji}&nbsp;{event.category}
+            <style.Icon size={11} />
+            {event.category}
           </div>
 
           {/* ♡ ボタン（右上・常時表示） */}
           <motion.button
             className="
               absolute top-3 right-3 z-10
-              w-8 h-8 rounded-full flex items-center justify-center text-[15px]
+              w-8 h-8 rounded-full flex items-center justify-center
             "
             style={{ background: 'rgba(0,0,0,0.40)', backdropFilter: 'blur(8px)' }}
             whileTap={{ scale: 0.82 }}
@@ -110,15 +119,17 @@ export default function EventCard({ event }: Props) {
             onClick={handleFavorite}
             aria-label={favorited ? 'お気に入りを解除' : 'お気に入りに追加'}
           >
-            <motion.span
+            <motion.div
               key={favorited ? 'filled' : 'empty'}
               initial={{ scale: 0.6, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-              className={favorited ? 'text-red-400' : 'text-white'}
             >
-              {favorited ? '♥' : '♡'}
-            </motion.span>
+              <Heart
+                size={15}
+                className={favorited ? 'text-red-400 fill-red-400' : 'text-white'}
+              />
+            </motion.div>
           </motion.button>
         </div>
 
@@ -130,18 +141,18 @@ export default function EventCard({ event }: Props) {
 
           <div className="flex flex-col gap-1.5 text-[12px] text-app-sub">
             <div className="flex items-center gap-1.5">
-              <span>📅</span>
+              <CalendarDays size={13} className="shrink-0" />
               <span>{formatDate(event.start_at)}</span>
             </div>
             {event.location && (
               <div className="flex items-center gap-1.5">
-                <span>📍</span>
+                <MapPin size={13} className="shrink-0" />
                 <span className="line-clamp-1">{event.location}</span>
               </div>
             )}
             {event.capacity && (
               <div className="flex items-center gap-1.5">
-                <span>👥</span>
+                <Users size={13} className="shrink-0" />
                 <span>定員 {event.capacity}名</span>
               </div>
             )}
