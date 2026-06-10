@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import apiClient from '@/lib/axios'
 
 type WeatherData = {
@@ -33,7 +32,8 @@ export default function WeatherBadge({ area, startAt, size = 'sm' }: Props) {
 
   return (
     <div className="flex items-center gap-0.5">
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src={`https://openweathermap.org/img/wn/${weather.icon}.png`}
         alt={weather.description}
         width={iconSize}
