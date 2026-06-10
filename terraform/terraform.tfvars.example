@@ -1,0 +1,9 @@
+# このファイルをコピーして terraform.tfvars を作成する
+# terraform.tfvars は .gitignore で除外済み（GitHubに上げない）
+#
+# 自分のIPアドレスの確認方法:
+#   PowerShell: curl ifconfig.me
+#   または https://ifconfig.me にアクセス
+
+my_ip       = "YOUR_IP_ADDRESS/32"
+db_password = "YOUR_STRONG_DB_PASSWORD"

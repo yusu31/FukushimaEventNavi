@@ -1,0 +1,11 @@
+# シークレット - GitHubに絶対上げない
+terraform.tfvars
+app-key
+app-key.pub
+
+# Terraform の内部ファイル
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate.*
