@@ -12,6 +12,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import apiClient from '@/lib/axios'
 import { Event } from '@/types/event'
+import WeatherBadge from '@/components/events/WeatherBadge'
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; Icon: LucideIcon }> = {
   'テクノロジー':    { bg: 'bg-[#e5f3f1]', text: 'text-[#2a7a68]', Icon: Monitor },
@@ -116,9 +117,12 @@ export default function EventDetailPage() {
 
             {/* メタ情報 */}
             <div className="flex flex-col gap-3 pb-5 border-b border-app-border mb-5">
-              <div className="flex items-start gap-2.5 text-[14px] text-app-sub">
-                <CalendarDays size={16} className="shrink-0 mt-0.5" />
-                <span>{formatDate(event.start_at)}{event.end_at && ` 〜 ${formatDate(event.end_at)}`}</span>
+              <div className="flex items-start justify-between gap-2.5">
+                <div className="flex items-start gap-2.5 text-[14px] text-app-sub min-w-0">
+                  <CalendarDays size={16} className="shrink-0 mt-0.5" />
+                  <span>{formatDate(event.start_at)}{event.end_at && ` 〜 ${formatDate(event.end_at)}`}</span>
+                </div>
+                <WeatherBadge area={event.area} startAt={event.start_at} size="md" />
               </div>
               {event.location && (
                 <div className="flex items-start gap-2.5 text-[14px] text-app-sub">

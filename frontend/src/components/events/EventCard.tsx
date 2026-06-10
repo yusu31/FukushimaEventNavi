@@ -15,6 +15,7 @@ import type { LucideIcon } from 'lucide-react'
 import { Event } from '@/types/event'
 // TODO(完成時): import { useAuth } from '@/contexts/AuthContext' を復元すること（#44）
 import { useFavorites } from '@/contexts/FavoritesContext'
+import WeatherBadge from '@/components/events/WeatherBadge'
 
 const CATEGORY_STYLES: Record<string, { gradient: string; text: string; Icon: LucideIcon }> = {
   'テクノロジー':      { gradient: 'from-[#0ea5e9] to-[#6366f1]', text: 'text-white', Icon: Monitor },
@@ -158,9 +159,12 @@ export default function EventCard({ event }: Props) {
           </div>
 
           <div className="flex flex-col gap-1.5 text-[12px] text-app-sub">
-            <div className="flex items-center gap-1.5">
-              <CalendarDays size={13} className="shrink-0" />
-              <span>{formatDate(event.start_at)}</span>
+            <div className="flex items-center justify-between gap-1.5">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <CalendarDays size={13} className="shrink-0" />
+                <span className="truncate">{formatDate(event.start_at)}</span>
+              </div>
+              <WeatherBadge area={event.area} startAt={event.start_at} size="sm" />
             </div>
             {event.location && (
               <div className="flex items-center gap-1.5">

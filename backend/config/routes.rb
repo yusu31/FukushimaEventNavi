@@ -7,6 +7,7 @@ Rails.application.routes.draw do
       resources :favorites, only: %i[index create destroy]
       resources :schedules, only: %i[index create destroy]
       resources :personal_events, only: %i[index create update destroy]
+      get "weather", to: "weather#show"
     end
   end
 
