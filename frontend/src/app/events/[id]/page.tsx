@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
 import {
   Monitor, Music, Trophy, Leaf, Utensils, Landmark,
@@ -13,6 +14,9 @@ import type { LucideIcon } from 'lucide-react'
 import apiClient from '@/lib/axios'
 import { Event } from '@/types/event'
 import WeatherBadge from '@/components/events/WeatherBadge'
+
+// Leaflet は window オブジェクトを使うため SSR 非対応 → dynamic import で回避
+const EventMap = dynamic(() => import('@/components/events/EventMap'), { ssr: false })
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; Icon: LucideIcon }> = {
   'テクノロジー':    { bg: 'bg-[#e5f3f1]', text: 'text-[#2a7a68]', Icon: Monitor },
@@ -104,11 +108,23 @@ export default function EventDetailPage() {
           )}
 
           <div className="p-7">
-            {/* カテゴリタグ */}
-            <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full mb-4 ${style.bg} ${style.text}`}>
-              <style.Icon size={12} />
-              {event.category}
-            </span>
+            {/* カテゴリタグ + アクションボタン（右上） */}
+            <div className="flex items-center justify-between mb-4">
+              <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ${style.bg} ${style.text}`}>
+                <style.Icon size={12} />
+                {event.category}
+              </span>
+              <div className="flex gap-2">
+                <button className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-dark text-white text-[12px] font-semibold px-3.5 py-1.5 rounded-[8px] transition-colors">
+                  <CalendarPlus size={13} />
+                  参加予定
+                </button>
+                <button className="inline-flex items-center gap-1.5 text-primary border-[1.5px] border-primary hover:bg-primary-light text-[12px] font-semibold px-3.5 py-1.5 rounded-[8px] transition-colors">
+                  <Heart size={13} />
+                  お気に入り
+                </button>
+              </div>
+            </div>
 
             {/* タイトル */}
             <h1 className="text-[22px] font-bold text-app-text leading-snug mb-5">
@@ -153,22 +169,13 @@ export default function EventDetailPage() {
 
             {/* 説明文 */}
             {event.description && (
-              <p className="text-[14px] leading-[1.85] text-app-text mb-7 whitespace-pre-wrap">
+              <p className="text-[14px] leading-[1.85] text-app-text mb-6 whitespace-pre-wrap">
                 {event.description}
               </p>
             )}
 
-            {/* アクションボタン */}
-            <div className="flex gap-3">
-              <button className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white text-[14px] font-semibold px-6 py-2.5 rounded-[10px] transition-colors">
-                <CalendarPlus size={15} />
-                参加予定に追加
-              </button>
-              <button className="inline-flex items-center gap-2 text-primary border-[1.5px] border-primary hover:bg-primary-light text-[14px] font-semibold px-6 py-2.5 rounded-[10px] transition-colors">
-                <Heart size={15} />
-                お気に入り
-              </button>
-            </div>
+            {/* 地図（一番下） */}
+            {event.location && <EventMap location={event.location} title={event.title} />}
           </div>
         </div>
       </motion.div>
