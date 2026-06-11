@@ -76,10 +76,29 @@ export default function RegionConquestModal({ region, onAdd, onClose, alreadyCon
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
           >
-            <p className="text-white/70 text-lg font-medium tracking-widest mb-1">制覇おめでとう！</p>
-            <h2 className="text-5xl font-black tracking-wide" style={{ color: '#ffd700', textShadow: '0 0 30px rgba(255,215,0,0.6), 0 2px 8px rgba(0,0,0,0.8)' }}>
+            <p
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.55em',
+                textTransform: 'uppercase',
+                color: '#d4af37',
+                textShadow: '0 0 20px rgba(212,175,55,0.5)',
+              }}
+            >
+              Conquered
+            </p>
+            <h2
+              className="text-5xl font-black tracking-wide"
+              style={{ color: '#ffffff', textShadow: '0 0 40px rgba(255,255,255,0.2), 0 2px 8px rgba(0,0,0,0.8)' }}
+            >
               {region.name}
             </h2>
+            <div className="flex items-center gap-3 mt-1">
+              <div style={{ width: 32, height: 1, background: 'rgba(255,255,255,0.25)' }} />
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.35em' }}>制覇</span>
+              <div style={{ width: 32, height: 1, background: 'rgba(255,255,255,0.25)' }} />
+            </div>
           </motion.div>
 
           {/* 3Dアイテム */}
