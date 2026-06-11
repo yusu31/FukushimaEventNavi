@@ -10,6 +10,11 @@ module Api
         render json: conquests
       end
 
+      def destroy_all
+        @current_user.region_conquests.destroy_all
+        render json: { message: 'Cleared' }
+      end
+
       def create
         conquest = @current_user.region_conquests.find_or_initialize_by(
           region_id: conquest_params[:region_id]

@@ -63,9 +63,9 @@ export default function CollectionItemModal({ region, conquest, onClose }: Props
             src={`/conquer/regions/${region.id === 'all' ? 'aizu' : region.id}.jpg`}
             alt=""
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ filter: 'blur(8px) brightness(0.3) saturate(1.4)' }}
+            style={{ filter: 'blur(4px) brightness(0.52) saturate(1.3)' }}
           />
-          <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)' }} />
+          <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.25)' }} />
         </div>
 
         {/* コンテンツ */}
