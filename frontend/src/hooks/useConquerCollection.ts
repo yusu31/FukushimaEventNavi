@@ -13,7 +13,7 @@ export function useConquerCollection() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/region_conquests')
+    fetch('/api/v1/region_conquests')
       .then((res) => res.json())
       .then((data: ConquestEntry[]) => setConquests(data))
       .catch(() => setConquests([]))
@@ -22,7 +22,7 @@ export function useConquerCollection() {
 
   const addConquest = useCallback(async (regionId: string): Promise<boolean> => {
     try {
-      const res = await fetch('/api/region_conquests', {
+      const res = await fetch('/api/v1/region_conquests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
