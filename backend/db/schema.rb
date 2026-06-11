@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_10_052431) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_11_113656) do
   create_table "events", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "title", null: false
     t.text "description"
@@ -94,13 +94,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_10_052431) do
 
   create_table "visit_records", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.bigint "event_id", null: false
+    t.bigint "event_id"
     t.string "municipality", limit: 100, null: false
     t.string "companion_type", limit: 20, null: false
-    t.string "photo_url"
+    t.text "photo_url", size: :medium
     t.datetime "visited_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "memo"
     t.index ["event_id"], name: "index_visit_records_on_event_id"
     t.index ["user_id", "municipality"], name: "index_visit_records_on_user_id_and_municipality"
     t.index ["user_id"], name: "index_visit_records_on_user_id"

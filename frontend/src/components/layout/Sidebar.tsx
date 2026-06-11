@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Home, CalendarDays, CalendarRange, Heart, Sprout } from 'lucide-react'
+import { Home, CalendarDays, CalendarRange, Heart, Sprout, MapPin } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useFavorites } from '@/contexts/FavoritesContext'
@@ -13,6 +13,7 @@ const navItems: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: '/events', label: 'イベント一覧', Icon: CalendarDays },
   { href: '/calendar', label: 'カレンダー', Icon: CalendarRange },
   { href: '/favorites', label: 'お気に入り', Icon: Heart },
+  { href: '/conquer', label: 'マップ制覇', Icon: MapPin },
 ]
 
 export default function Sidebar() {
