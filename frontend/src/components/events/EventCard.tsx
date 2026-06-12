@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-// TODO(完成時): import { useRouter } from 'next/navigation' を復元すること（#44）
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import {
   Monitor, Music, Trophy, Leaf, Utensils, Landmark,
@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Event } from '@/types/event'
-// TODO(完成時): import { useAuth } from '@/contexts/AuthContext' を復元すること（#44）
+import { useAuth } from '@/contexts/AuthContext'
 import { useFavorites } from '@/contexts/FavoritesContext'
 import WeatherBadge from '@/components/events/WeatherBadge'
 
@@ -49,8 +49,8 @@ function formatDate(dateStr: string) {
 type Props = { event: Event }
 
 export default function EventCard({ event }: Props) {
-  // TODO(完成時): const router = useRouter() を復元すること（#44）
-  // TODO(完成時): const { isLoggedIn } = useAuth() を復元すること（#44）
+  const router = useRouter()
+  const { isLoggedIn } = useAuth()
   const { isFavorited, toggleFavorite } = useFavorites()
   const [isToggling, setIsToggling] = useState(false)
 
@@ -60,12 +60,11 @@ export default function EventCard({ event }: Props) {
   async function handleFavorite(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
-    // TODO(完成時): 下の1行を復元してリダイレクトに戻すこと（#44）
-    // if (!isLoggedIn) { router.push('/auth/sign-in'); return }
+    if (!isLoggedIn) { router.push('/auth/sign-in'); return }
     if (isToggling) return
     setIsToggling(true)
     try {
-      await toggleFavorite(event.id, event)
+      await toggleFavorite(event.id)
       const next = !favorited
       toast(next ? 'お気に入りに追加しました' : 'お気に入りを解除しました', {
         id: `fav-${event.id}`,

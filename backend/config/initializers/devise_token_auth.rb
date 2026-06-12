@@ -7,4 +7,6 @@ DeviseTokenAuth.setup do |config|
   config.batch_request_buffer_throttle = 5.seconds
   # Rails API モードではセッションが無効なため bypass_sign_in を無効化
   config.bypass_sign_in = false
+  # confirm_success_url を省略できるようにデフォルト値を設定
+  config.default_confirm_success_url = "http://localhost:3000/events"
 end

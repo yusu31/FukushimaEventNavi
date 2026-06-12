@@ -16,8 +16,6 @@ import EventCard from '@/components/events/EventCard'
 import { useAuth } from '@/contexts/AuthContext'
 import { useFavorites } from '@/contexts/FavoritesContext'
 
-// TODO(完成時): 未ログイン時の「ログインが必要です」ブロックを復元すること（#44）
-
 function SkeletonCard() {
   return (
     <div className="rounded-2xl overflow-hidden bg-white shadow-[0_1px_3px_rgba(0,0,0,0.07),0_0_0_1px_rgba(0,0,0,0.05)] animate-pulse">
@@ -40,6 +38,24 @@ export default function FavoritesPage() {
   const { favorites, isLoading } = useFavorites()
 
   const showSkeleton = !mounted || authLoading || isLoading
+
+  if (mounted && !authLoading && !isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-app-bg flex flex-col items-center justify-center gap-4 px-6">
+        <Heart size={40} className="text-red-400" />
+        <h2 className="text-[18px] font-bold text-app-text">ログインが必要です</h2>
+        <p className="text-[13px] text-app-sub text-center leading-relaxed">
+          お気に入り機能を使うには<br />ログインしてください。
+        </p>
+        <Link
+          href="/auth/sign-in"
+          className="mt-2 inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-primary text-white text-[13px] font-semibold hover:opacity-90 transition-opacity"
+        >
+          ログインする →
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-app-bg px-6 py-8">

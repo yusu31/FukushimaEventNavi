@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     passwordConfirmation: string,
     name: string
   ) => {
-    const response = await apiClient.post('/auth/sign_up', {
+    const response = await apiClient.post('/auth', {
       email,
       password,
       password_confirmation: passwordConfirmation,
