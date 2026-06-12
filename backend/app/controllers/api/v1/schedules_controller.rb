@@ -3,6 +3,9 @@
 module Api
   module V1
     class SchedulesController < BaseController
+      skip_before_action :authenticate_user!
+      before_action :set_dev_user
+
       def index
         schedules = current_user.schedules.includes(:event)
         render json: schedules.map { |s|
@@ -20,6 +23,16 @@ module Api
         schedule = current_user.schedules.find(params[:id])
         schedule.destroy!
         render json: { message: "Removed from schedule" }
+      end
+
+      private
+
+      def set_dev_user
+        @current_user = User.first!
+      end
+
+      def current_user
+        @current_user
       end
     end
   end

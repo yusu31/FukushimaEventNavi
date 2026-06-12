@@ -18,7 +18,6 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import apiClient from '@/lib/axios'
-import { useAuth } from '@/contexts/AuthContext'
 import { Event } from '@/types/event'
 import { PersonalEvent } from '@/types/personalEvent'
 import PersonalEventModal from '@/components/calendar/PersonalEventModal'
@@ -162,7 +161,6 @@ const LOADING_MESSAGES = [
 // ─── メインコンポーネント ─────────────────────────────────────────────
 export default function CalendarPage() {
   const router = useRouter()
-  const { isLoggedIn } = useAuth()
   const calendarRef = useRef<FullCalendar>(null)
   const popupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const chipsScrollRef = useRef<HTMLDivElement>(null)
@@ -460,11 +458,11 @@ export default function CalendarPage() {
 
   // ─── マイ予定 CRUD ───────────────────────────────────────────────
   const handlePersonalEventSave = async ({
-    title, memo, date, startTime, endTime, location, url, municipality,
+    title, memo, date, startTime, endTime, location, url,
   }: {
     title: string; memo: string; date: string
     startTime: string; endTime: string
-    location: string; url: string; municipality: string
+    location: string; url: string
   }) => {
     const payload = {
       personal_event: {
@@ -473,7 +471,6 @@ export default function CalendarPage() {
         end_time: endTime || null,
         location: location || null,
         url: url || null,
-        municipality: municipality || null,
       },
     }
     try {
@@ -505,19 +502,6 @@ export default function CalendarPage() {
 
   // ─── 参加予定に追加 / 解除 ──────────────────────────────────────
   const handleAddToSchedule = async (eventId: string) => {
-    // TODO(完成時): 未ログイン時のAPIガードを復元すること（#44）
-    if (!isLoggedIn) {
-      const id = Number(eventId)
-      const isAdded = scheduledEventIds.has(id)
-      if (isAdded) {
-        setScheduledEventIds(prev => { const s = new Set(prev); s.delete(id); return s })
-        toast('参加予定を解除しました', { style: { fontSize: '13px' } })
-      } else {
-        setScheduledEventIds(prev => new Set(prev).add(id))
-        toast('カレンダーに追加しました', { style: { fontSize: '13px', fontWeight: '600' } })
-      }
-      return
-    }
     const id = Number(eventId)
     const isAdded = scheduledEventIds.has(id)
     setAddingId(eventId)

@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Trash2, Save, Pencil, Clock, MapPin, Link, ExternalLink, CalendarDays, Navigation } from 'lucide-react'
+import { X, Trash2, Save, Pencil, Clock, MapPin, Link, ExternalLink, CalendarDays } from 'lucide-react'
 import { PersonalEvent } from '@/types/personalEvent'
-import { FUKUSHIMA_MUNICIPALITIES } from '@/constants/municipalities'
 
 type Props = {
   isOpen: boolean
@@ -19,7 +18,6 @@ type Props = {
     endTime: string
     location: string
     url: string
-    municipality: string
   }) => Promise<void>
   onDelete: (id: number) => Promise<void>
 }
@@ -41,7 +39,6 @@ export default function PersonalEventModal({
   const [endMin, setEndMin] = useState('')
   const [location, setLocation] = useState('')
   const [url, setUrl] = useState('')
-  const [municipality, setMunicipality] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isGettingLocation, setIsGettingLocation] = useState(false)
@@ -64,7 +61,6 @@ export default function PersonalEventModal({
       setEndMin(et.m)
       setLocation(existingEvent?.location ?? '')
       setUrl(existingEvent?.url ?? '')
-      setMunicipality(existingEvent?.municipality ?? '')
     }
   }, [isOpen, existingEvent, selectedDate])
 
@@ -83,7 +79,6 @@ export default function PersonalEventModal({
         endTime: buildTime(endHour, endMin),
         location: location.trim(),
         url: url.trim(),
-        municipality,
       })
       onClose()
     } finally {
@@ -290,29 +285,6 @@ export default function PersonalEventModal({
                   {location.trim() && (
                     <p className="text-[10px] text-gray-400 mt-1 ml-1">
                       ボタンで現在地からのルートをGoogleマップで開きます
-                    </p>
-                  )}
-                </div>
-
-                {/* 市町村（マップ制覇連携） */}
-                <div>
-                  <label className="text-[11px] font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
-                    <Navigation size={11} />訪問予定の市町村
-                    <span className="text-gray-300 font-normal ml-1">（マップ制覇に連携）</span>
-                  </label>
-                  <select
-                    value={municipality}
-                    onChange={e => setMunicipality(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-[13px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-400/40 focus:border-emerald-400 transition-all bg-white"
-                  >
-                    <option value="">未設定</option>
-                    {FUKUSHIMA_MUNICIPALITIES.map(m => (
-                      <option key={m} value={m}>{m}</option>
-                    ))}
-                  </select>
-                  {municipality && (
-                    <p className="text-[10px] text-emerald-600 mt-1 ml-1">
-                      日付を過ぎると、マップ上に「確認待ちピン」が表示されます
                     </p>
                   )}
                 </div>

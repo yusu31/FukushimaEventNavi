@@ -14,13 +14,17 @@ module Api
 
       def create
         personal_event = current_user.personal_events.build(personal_event_params)
+        personal_event.municipality = MunicipalityDetectorService.detect(personal_event.location)
         personal_event.save!
         render json: personal_event, status: :created
       end
 
       def update
         personal_event = current_user.personal_events.find(params[:id])
-        personal_event.update!(personal_event_params)
+        new_params = personal_event_params
+        personal_event.assign_attributes(new_params)
+        personal_event.municipality = MunicipalityDetectorService.detect(personal_event.location)
+        personal_event.save!
         render json: personal_event
       end
 
@@ -41,7 +45,7 @@ module Api
       end
 
       def personal_event_params
-        params.require(:personal_event).permit(:title, :memo, :event_date, :start_time, :end_time, :location, :url, :municipality)
+        params.require(:personal_event).permit(:title, :memo, :event_date, :start_time, :end_time, :location, :url)
       end
     end
   end

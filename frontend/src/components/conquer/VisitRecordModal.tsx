@@ -30,6 +30,7 @@ type VisitRecord = {
 type Props = {
   municipality: string
   existingRecord: VisitRecord | null
+  eventId?: number | null
   onClose: () => void
   onSaved: (record: VisitRecord) => void
   onDeleted: (id: number) => void
@@ -93,6 +94,7 @@ function cropImage(
 export default function VisitRecordModal({
   municipality,
   existingRecord,
+  eventId = null,
   onClose,
   onSaved,
   onDeleted,
@@ -230,6 +232,7 @@ export default function VisitRecordModal({
         visited_at: visitedAt,
         memo: memo || null,
         photo_url: finalPhotoUrl,
+        ...(eventId ? { event_id: eventId } : {}),
       },
     }
 

@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Map as MapIcon, Trophy, ChevronRight, ChevronLeft, X, Pencil } from 'lucide-react'
 import apiClient from '@/lib/axios'
-import { useAuth } from '@/contexts/AuthContext'
 import VisitRecordModal from '@/components/conquer/VisitRecordModal'
 import FukushimaMap from '@/components/conquer/FukushimaMap'
 import RegionConquestModal from '@/components/conquer/RegionConquestModal'
@@ -277,7 +276,6 @@ function PhotoLightbox({
 // メインページ
 // ──────────────────────────────────────────────────
 export default function ConquerPage() {
-  const { isLoggedIn } = useAuth()
   const [mounted, setMounted] = useState(false)
   const [visitRecords, setVisitRecords] = useState<VisitRecord[]>([])
   const [isLoadingRecords, setIsLoadingRecords] = useState(false)
@@ -289,6 +287,7 @@ export default function ConquerPage() {
   const [activePending, setActivePending] = useState<PendingConfirmation | null>(null)
   const [pendingQueue, setPendingQueue] = useState<PendingSource[]>([])
   const [pendingMunicipalityForRecord, setPendingMunicipalityForRecord] = useState<string | null>(null)
+  const [pendingEventId, setPendingEventId] = useState<number | null>(null)
   const prevCompletedRef = useRef<Record<string, boolean>>({})
   const prevAllConqueredRef = useRef(false)
   const { conquests, addConquest, hasConquered } = useConquerCollection()
@@ -296,7 +295,6 @@ export default function ConquerPage() {
   useEffect(() => setMounted(true), [])
 
   useEffect(() => {
-    if (!isLoggedIn) return
     const load = async () => {
       setIsLoadingRecords(true)
       try {
@@ -313,7 +311,7 @@ export default function ConquerPage() {
       }
     }
     load()
-  }, [isLoggedIn])
+  }, [])
 
   const existingRecord = selectedMunicipality
     ? visitRecords.find((r) => r.municipality === selectedMunicipality) ?? null
@@ -326,6 +324,7 @@ export default function ConquerPage() {
       return [...prev, record]
     })
     setSelectedMunicipality(null)
+    setPendingEventId(null)
     // 記録済みになったら確認待ちリストから除去
     setPendingConfirmations(prev => prev.filter(p => p.municipality !== record.municipality))
     // キューに次の確認対象があれば順番に開く
@@ -393,7 +392,10 @@ export default function ConquerPage() {
   const handlePendingConfirmed = useCallback((municipality: string, checkedSources: PendingSource[]) => {
     setActivePending(null)
     setPendingMunicipalityForRecord(municipality)
-    setPendingQueue(checkedSources.slice(1)) // 1件目を開いて残りをキュー
+    setPendingQueue(checkedSources.slice(1))
+    // 最初のソースがイベントなら event_id を訪問記録に紐付けるために保持
+    const first = checkedSources[0]
+    setPendingEventId(first?.source_type === 'event' ? first.source_id : null)
     setSelectedMunicipality(municipality)
   }, [])
 
@@ -644,7 +646,8 @@ export default function ConquerPage() {
         <VisitRecordModal
           municipality={selectedMunicipality}
           existingRecord={existingRecord}
-          onClose={() => setSelectedMunicipality(null)}
+          eventId={pendingEventId}
+          onClose={() => { setSelectedMunicipality(null); setPendingEventId(null) }}
           onSaved={handleSaved}
           onDeleted={handleDeleted}
         />

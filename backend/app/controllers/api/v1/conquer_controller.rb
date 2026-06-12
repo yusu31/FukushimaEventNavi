@@ -20,17 +20,16 @@ module Api
                     .includes(:event)
                     .each do |schedule|
           event = schedule.event
-          municipality = event.area
-          event_date = event.start_at.to_date
 
-          next if visit_exists?(municipality, event_date)
+          # そのイベントに紐付いた訪問記録があれば確認済みとみなす
+          next if current_user.visit_records.where(event_id: event.id).exists?
 
           pending << {
-            municipality: municipality,
+            municipality: event.area,
             source_type: "event",
             source_id: event.id,
             title: event.title,
-            date: event_date.iso8601
+            date: event.start_at.to_date.iso8601
           }
         end
 
@@ -39,17 +38,18 @@ module Api
                     .where("event_date < ?", Date.current)
                     .where.not(municipality: [nil, ""])
                     .each do |pe|
-          municipality = pe.municipality
-          event_date = pe.event_date
-
-          next if visit_exists?(municipality, event_date)
+          # 個人予定は event_id がないため日付ベースで判定（イベント日以降の訪問記録を確認）
+          next if current_user.visit_records
+                               .where(municipality: pe.municipality)
+                               .where("visited_at >= ?", pe.event_date.beginning_of_day)
+                               .exists?
 
           pending << {
-            municipality: municipality,
+            municipality: pe.municipality,
             source_type: "personal_event",
             source_id: pe.id,
             title: pe.title,
-            date: event_date.iso8601
+            date: pe.event_date.iso8601
           }
         end
 
@@ -76,15 +76,6 @@ module Api
         @current_user
       end
 
-      # 同じ市町村に ±7日以内の訪問記録があれば true
-      def visit_exists?(municipality, event_date)
-        current_user.visit_records
-                    .where(municipality: municipality)
-                    .where(
-                      visited_at: (event_date - 7.days).beginning_of_day..(event_date + 7.days).end_of_day
-                    )
-                    .exists?
-      end
     end
   end
 end
