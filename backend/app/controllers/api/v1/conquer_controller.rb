@@ -36,7 +36,7 @@ module Api
         # ── ② municipality を設定した個人予定（日付過去）──
         current_user.personal_events
                     .where("event_date < ?", Date.current)
-                    .where.not(municipality: [nil, ""])
+                    .where.not(municipality: [ nil, "" ])
                     .each do |pe|
           # 個人予定は event_id がないため日付ベースで判定（イベント日以降の訪問記録を確認）
           next if current_user.visit_records
@@ -75,7 +75,6 @@ module Api
       def current_user
         @current_user
       end
-
     end
   end
 end
