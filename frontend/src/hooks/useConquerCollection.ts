@@ -14,8 +14,11 @@ export function useConquerCollection() {
 
   useEffect(() => {
     fetch('/api/v1/region_conquests')
-      .then((res) => res.json())
-      .then((data: ConquestEntry[]) => setConquests(data))
+      .then((res) => {
+        if (!res.ok) return []
+        return res.json()
+      })
+      .then((data: unknown) => setConquests(Array.isArray(data) ? data : []))
       .catch(() => setConquests([]))
       .finally(() => setIsLoading(false))
   }, [])

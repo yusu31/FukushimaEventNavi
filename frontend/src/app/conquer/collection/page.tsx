@@ -6,6 +6,7 @@ import { Trophy, ArrowLeft, Zap, RotateCcw } from 'lucide-react'
 import Link from 'next/link'
 import CollectionShelf from '@/components/conquer/CollectionShelf'
 import { useConquerCollection } from '@/hooks/useConquerCollection'
+import { useAuth } from '@/contexts/AuthContext'
 
 const FUKUSHIMA_REGIONS = [
   { id: 'kenpo', name: '県北', ruby: 'けんぽく', color: '#5a9e7a' },
@@ -25,6 +26,7 @@ const ALL_REGION_IDS = [...FUKUSHIMA_REGIONS.map((r) => r.id), 'all']
 export default function CollectionPage() {
   const [mounted, setMounted] = useState(false)
   const [devBusy, setDevBusy] = useState(false)
+  const { isLoggedIn, isLoading: authLoading } = useAuth()
   const { conquests, isLoading, addConquest } = useConquerCollection()
 
   useEffect(() => setMounted(true), [])
@@ -43,10 +45,28 @@ export default function CollectionPage() {
     window.location.reload()
   }, [])
 
-  if (!mounted) {
+  if (!mounted || authLoading) {
     return (
       <div className="min-h-screen bg-app-bg flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    )
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-app-bg flex flex-col items-center justify-center gap-4 px-6">
+        <Trophy size={40} className="text-yellow-500" />
+        <h2 className="text-[18px] font-bold text-app-text">ログインが必要です</h2>
+        <p className="text-[13px] text-app-sub text-center leading-relaxed">
+          コレクション機能を使うには<br />ログインしてください。
+        </p>
+        <Link
+          href="/auth/sign-in"
+          className="mt-2 inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-primary text-white text-[13px] font-semibold hover:opacity-90 transition-opacity"
+        >
+          ログインする →
+        </Link>
       </div>
     )
   }
